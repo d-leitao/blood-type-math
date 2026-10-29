@@ -81,3 +81,39 @@ test('Portugal, plasma: AB types tie for first at 3.05×', () => {
   close(r.value[idx['AB+']], 3.05);
   close(r.value[idx['B−']], 1.12);
 });
+
+test('same-type share: average stays exactly 1 for any θ', () => {
+  for (const p of Object.values(DATA)) {
+    const total = p.reduce((a, b) => a + b, 0);
+    for (const theta of [0, 0.3, 0.7, 1]) {
+      for (const component of ['red', 'plasma']) {
+        const { value } = scoreTypes(p, component, theta);
+        close(value.reduce((s, v, i) => s + v * p[i], 0) / total, 1, 1e-9);
+      }
+    }
+  }
+});
+
+test('same-type share: θ = 1 gives every type exactly 1', () => {
+  for (const v of scoreTypes(DATA.Portugal, 'red', 1).value) close(v, 1, 1e-12);
+});
+
+test('same-type share shrinks scores toward 1 without changing the order', () => {
+  const base = scoreTypes(DATA.Portugal, 'red', 0);
+  for (const theta of [0.2, 0.5, 0.7, 0.9]) {
+    const r = scoreTypes(DATA.Portugal, 'red', theta);
+    assert.deepEqual(r.order, base.order);
+    r.value.forEach((v, i) => close(v, theta + (1 - theta) * base.value[i], 1e-12));
+  }
+});
+
+test('Portugal, red cells at 70% same-type: O− about 1.65×, near England\'s 13% ÷ 7.8%', () => {
+  const r = scoreTypes(DATA.Portugal, 'red', 0.7);
+  close(r.value[idx['O−']], 1.65);
+  close(r.value[idx['B−']], 0.80);
+  assert.ok(Math.abs(r.value[idx['O−']] - 13 / 7.8) < 0.05);
+});
+
+test('same-type share outside 0..1 is rejected', () => {
+  assert.throws(() => scoreTypes(DATA.Portugal, 'red', 1.5), RangeError);
+});

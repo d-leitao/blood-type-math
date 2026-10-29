@@ -1,7 +1,7 @@
 {
   "name": "blood-type-math",
   "private": true,
-  "description": "Who can give blood to whom, how common each type is in 123 countries, and a model of which donor types matter most.",
+  "description": "Which blood donations go furthest, given how prevalent each type is and who can give to whom. Data for 123 countries.",
   "type": "module",
   "scripts": {
     "test": "node --test",

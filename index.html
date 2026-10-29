@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Blood Type Math</title>
-<meta name="description" content="Who can give blood to whom, how common each type is in 123 countries, and a model of which donor types matter most.">
+<meta name="description" content="Which blood donations go furthest, given how prevalent each type is and who can give to whom. Data for 123 countries.">
 <meta property="og:title" content="Blood Type Math">
-<meta property="og:description" content="Who can give blood to whom, how common each type is in 123 countries, and a model of which donor types matter most.">
+<meta property="og:description" content="Which blood donations go furthest, given how prevalent each type is and who can give to whom. Data for 123 countries.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://d-leitao.github.io/blood-type-math/">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -203,6 +203,18 @@ button.ch,button.rh,button.c{appearance:none;border:0;font:inherit;color:inherit
 .step p{margin:0;font-size:13.5px;color:var(--ink-2)}
 .model-result{margin:0;font-size:17px;max-width:68ch;text-wrap:pretty}
 .model-result strong{font-family:var(--font-display);font-weight:800;font-stretch:112%}
+.theta{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px 18px;display:grid;gap:10px;max-width:760px;min-width:0}
+.theta-head{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px 16px}
+.theta-head label{font-weight:600;font-size:15px}
+.theta-head output{font-family:var(--font-data);font-size:16px;font-variant-numeric:tabular-nums}
+.theta-track{position:relative;padding-top:22px}
+.theta-mark{position:absolute;top:0;left:var(--at);transform:translateX(-50%);font-family:var(--font-data);font-size:11px;color:var(--muted);white-space:nowrap}
+.theta-mark::after{content:"";position:absolute;left:50%;top:15px;height:6px;border-left:1px solid var(--muted)}
+.theta input[type=range]{display:block;width:100%;margin:0;accent-color:var(--ink);cursor:pointer}
+.theta input[type=range]:focus-visible{outline:2px solid var(--ink);outline-offset:4px}
+.theta-scale{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:var(--muted)}
+.theta p{margin:0;font-size:13.5px;color:var(--ink-2)}
+.theta a{color:var(--ink);text-underline-offset:3px}
 .model-charts{display:grid;gap:20px;grid-template-columns:minmax(0,1fr)}
 @media (min-width:900px){.model-charts{grid-template-columns:1fr 1fr}}
 .chart{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px 14px 14px;display:grid;gap:12px;align-content:start;min-width:0}
@@ -238,7 +250,7 @@ button.bar-row:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
 .assume{display:grid;gap:6px;max-width:78ch;font-size:13.5px;color:var(--ink-2)}
 .assume h3{margin:0;font-size:12px;font-family:var(--font-data);letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:500}
 .assume ul{margin:0;padding-left:18px;display:grid;gap:4px}
-@media (max-width:480px){.chart-axis,.bar-row{grid-template-columns:70px minmax(0,1fr) 74px;column-gap:8px}}
+@media (max-width:480px){.chart-axis,.bar-row{grid-template-columns:70px minmax(0,1fr) 74px;column-gap:8px}.formula{font-size:14px}}
 
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
@@ -248,7 +260,7 @@ button.bar-row:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
   <header>
     <div class="eyebrow">ABO and RhD · donor to recipient</div>
     <h1>Blood type math</h1>
-    <p class="lede">Who can give blood to whom, how common each type is, and which donors matter most. In the compatibility matrix, rows are donors and columns are recipients. Every type label carries its share of the population, and the outer edges add up how many people each donor can reach and how large each recipient’s donor pool is. Below the grid, a model scores which donor type is most valuable.</p>
+    <p class="lede">Who can give blood to whom, how common each type is, and which donations go furthest. In the compatibility matrix, rows are donors and columns are recipients. Every type label carries its share of the population, and the outer edges add up how many people each donor can reach and how large each recipient’s donor pool is. Below the grid, a model scores which donations go furthest.</p>
   </header>
 
   <div class="controls">
@@ -289,8 +301,8 @@ button.bar-row:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
   <section class="model" id="value" aria-labelledby="value-h">
     <div class="model-head">
       <div class="eyebrow" id="model-eyebrow">Model</div>
-      <h2 id="value-h">Which donor type is most valuable?</h2>
-      <p class="model-lede">A donor is worth more when the patients they can treat have few other donors to rely on. Counting how many people a type can give to overrates common pairings, because a group like A+ can already take blood from most of the population. The model weighs every patient group by how hard it is to supply.</p>
+      <h2 id="value-h">Which donations go furthest?</h2>
+      <p class="model-lede">A donation goes further when it can reach patients who have few other donors to rely on. Counting how many people a type can give to overrates common pairings, because a group like A+ can already take blood from most of the population, so the model weighs each patient group by how hard it is to supply. Hospitals give most patients their own type, and the slider sets how much.</p>
     </div>
 
     <div class="steps">
@@ -300,10 +312,24 @@ button.bar-row:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
         <p>The share of people with type <var>j</var>, divided by the share who can donate to them. At 1.0, every compatible donor is needed just to cover that group. Small values mean donors to spare.</p>
       </div>
       <div class="step">
-        <span class="step-n">Step 2 · Value of one donor</span>
-        <div class="formula"><var>V</var><sub>i</sub> = Σ<sub>j ∈ reach(i)</sub> <var>P</var><sub>j</sub></div>
-        <p>Add up the pressure on every group that type <var>i</var> can give to. This is the same as splitting each group’s need evenly across everyone who can donate to it and measuring what lands on one donor. Across the population <var>V</var> averages exactly 1.0, so 2.0 means twice the load of the average donor.</p>
+        <span class="step-n">Step 2 · Load on one donor</span>
+        <div class="formula"><var>V</var><sub>i</sub> = <var>θ</var> + (1 − <var>θ</var>) · Σ<sub>j ∈ reach(i)</sub> <var>P</var><sub>j</sub></div>
+        <p><var>θ</var> is the share of each group’s need met with same-type blood, set below. The rest is split evenly across everyone who can donate to that group, so the sum adds up the pressure on every group type <var>i</var> can give to. <var>V</var> averages exactly 1.0 across the population, so 2.0 means twice the load of the average donor.</p>
       </div>
+    </div>
+
+    <div class="theta">
+      <div class="theta-head">
+        <label for="theta">Same-type first</label>
+        <output id="theta-out" for="theta">70%</output>
+      </div>
+      <div class="theta-track">
+        <span class="theta-mark" style="--at:70%" aria-hidden="true">England ≈ 70%</span>
+        <input type="range" id="theta" min="0" max="100" step="5" value="70" aria-describedby="theta-note">
+      </div>
+      <div class="theta-scale" aria-hidden="true"><span>Any compatible unit</span><span>Own type only</span></div>
+      <p id="theta-note"></p>
+      <p>About 70% reproduces England’s figures for O−: 7.8% of hospital patients but 13% of red-cell stock, with 41% of O− units going to patients who aren’t O− (<a href="https://nhsbtdbe.blob.core.windows.net/umbraco-assets-corp/17159/o-neg-survey-2018-final2.pdf" target="_blank" rel="noopener">NHSBT 2018 audit</a>). There’s no comparable data for other countries or for plasma, so treat it as a rough setting.</p>
     </div>
 
     <p class="model-result" id="model-result"></p>
@@ -311,8 +337,8 @@ button.bar-row:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
     <div class="model-charts">
       <div class="chart rank" id="rank-chart">
         <div class="chart-head">
-          <h3>Donor value, ranked</h3>
-          <p class="sub">Load carried by one donor of each type, relative to the average donor. Select a type to see where its score comes from.</p>
+          <h3>Load per donor, ranked</h3>
+          <p class="sub">One donor of each type, relative to the average donor. Select a type to see where its score comes from.</p>
         </div>
         <div class="chart-axis" id="rank-axis"><span></span><span class="ax"><span>Average = 1.0</span></span><span></span></div>
         <div class="bars" id="m-rank"></div>
@@ -330,9 +356,9 @@ button.bar-row:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
     <div class="assume">
       <h3>What the model assumes</h3>
       <ul>
-        <li>Patients and donors are spread like the general population, and everyone donates at the same rate.</li>
-        <li>Each patient group’s need is shared evenly across all compatible donors. Hospitals give same-type blood first, which pulls every score toward 1.0. They also give O− in emergencies before the patient is typed, which pushes O− back up.</li>
-        <li>Only ABO and RhD count, and every unit is worth the same. Plasma ignores RhD, so negative and positive types score the same for plasma.</li>
+        <li>Patients and donors are spread like the general population, and everyone donates at the same rate. In reality patients skew older, and donor pools differ by age and ethnicity.</li>
+        <li>One same-type share applies to every group, and the rest is spread evenly across compatible donors. Real substitution is lopsided: mostly O− in emergencies before a patient is typed, units about to expire, and patients with special requirements. O−’s score at about 70% is anchored to data; the other types’ scores are rougher.</li>
+        <li>Only ABO and RhD count, and every unit is worth the same. Plasma ignores RhD, so negative and positive types score the same for plasma. Much donated plasma is made into medicines, where blood type doesn’t matter, so the plasma view only applies to plasma used directly in transfusions.</li>
       </ul>
     </div>
   </section>
@@ -382,6 +408,7 @@ let mode = load('btc-mode', 'red'); if (mode !== 'red' && mode !== 'plasma') mod
 let region = load('btc-region', 'World'); if (!D.r[region]) region = 'World';
 let me = parseInt(load('btc-me', '-1'), 10); if (!(me >= 0 && me < 8)) me = -1;
 let pin = {t: me >= 0 ? me : 0};
+let theta = parseInt(load('btc-theta', '70'), 10); if (!(theta >= 0 && theta <= 100)) theta = 70;
 let hover = null;
 
 document.getElementById('lg-ok').innerHTML = CHECK;
@@ -410,6 +437,10 @@ mineSel.addEventListener('change', () => {
   if (me >= 0) pin = {t: me};
   hover = null; update();
 });
+
+const thetaIn = document.getElementById('theta');
+thetaIn.value = String(theta);
+thetaIn.addEventListener('input', () => { theta = parseInt(thetaIn.value, 10); save('btc-theta', String(theta)); update(); });
 
 document.querySelectorAll('.seg button').forEach(b => b.addEventListener('click', () => {
   mode = b.dataset.mode; save('btc-mode', mode); update();
@@ -465,10 +496,11 @@ P.addEventListener('click', e => {
 
 /* value model (see model.js) */
 function model(p, plasma){
-  const r = scoreTypes(p, plasma ? 'plasma' : 'red');
-  return {pool: r.pool, P: r.pressure, V: r.value, rank: r.rank, order: r.order};
+  const r = scoreTypes(p, plasma ? 'plasma' : 'red', theta / 100);
+  return {pool: r.pool, P: r.pressure, S: r.shared, V: r.value, rank: r.rank, order: r.order};
 }
 const fmtV = v => v >= 10 ? v.toFixed(1) : v.toFixed(2);
+const fmt3 = v => v.toFixed(3);
 const ord = n => n + (n === 1 ? 'st' : n === 2 ? 'nd' : n === 3 ? 'rd' : 'th');
 
 const MR = document.getElementById('m-rank'), MP = document.getElementById('m-press');
@@ -491,12 +523,18 @@ function renderModel(m, p, plasma, f){
   const comp = plasma ? 'plasma' : 'red cells';
   const place = region === 'World' ? 'World' : region;
   document.getElementById('model-eyebrow').textContent = `Model · ${plasma ? 'Plasma' : 'Red cells'} · ${place}`;
+  document.getElementById('theta-out').textContent = theta + '%';
+  document.getElementById('theta-note').textContent = theta === 0
+    ? 'At 0%, any compatible unit can go to any patient. This is the most flexible case and an upper bound on how much universal donors stand out.'
+    : theta === 100
+      ? 'At 100%, every patient gets their own type, so every donor carries exactly the average load.'
+      : `${theta}% of each group’s need is met with same-type blood, and the other ${100 - theta}% is shared across compatible donors.`;
 
   const topV = m.V[m.order[0]], tops = m.order.filter(i => Math.abs(m.V[i] - topV) < 1e-9);
-  const lead = tops.length > 1
-    ? `<strong>${joinAnd(tops.map(i => T[i].l))}</strong> are the most valuable ${plasma ? 'plasma' : 'red-cell'} donors ${where(region)}, at ${fmtV(topV)}× the average donor.`
-    : `<strong>${T[tops[0]].l}</strong> is the most valuable ${plasma ? 'plasma' : 'red-cell'} donor ${where(region)}, at ${fmtV(topV)}× the average donor.`;
-  const mine = me < 0
+  const lead = theta === 100
+    ? 'With every patient getting their own type, every donor carries exactly the average load.'
+    : `<strong>${joinAnd(tops.map(i => T[i].l))}</strong> ${plasma ? 'plasma' : 'red-cell'} donations go furthest ${where(region)}, at ${fmtV(topV)}× the average donor.`;
+  const mine = theta === 100 ? '' : me < 0
     ? ' Set your type above to see where you rank.'
     : tops.includes(me)
       ? (tops.length > 1 ? ' That includes your type.' : ' That’s your type.')
@@ -519,7 +557,8 @@ function renderModel(m, p, plasma, f){
   document.getElementById('press-h').textContent = `Where ${d.l}’s score comes from`;
   document.getElementById('key-out').textContent = `Can’t receive ${comp} from ${d.l}`;
   document.getElementById('press-sub').textContent =
-    `Pressure on each patient group, patients ÷ people who can donate ${comp} to them. ${d.l} can give to ${reach.length === 8 ? 'all 8 groups' : reach.length + ' group' + (reach.length > 1 ? 's' : '')}, and their bars add up to ${fmtV(m.V[f])}.`;
+    `Pressure on each patient group, patients ÷ people who can donate ${comp} to them. ${d.l} can give to ${reach.length === 8 ? 'all 8 groups' : reach.length + ' group' + (reach.length > 1 ? 's' : '')}, and their bars add up to ${fmt3(m.S[f])}.` +
+    (theta === 0 ? ' That sum is its score.' : ` With ${theta}% same-type, its score is ${(theta / 100).toFixed(2)} + ${(1 - theta / 100).toFixed(2)} × ${fmt3(m.S[f])} = ${fmtV(m.V[f])}.`);
   const maxP = Math.max(...m.P) || 1;
   T.forEach((u, j) => {
     const r = pressRows[j], inn = ok(plasma, d, u);
@@ -594,7 +633,7 @@ function renderPanel(a, p, plasma, m){
       <p class="p-bio">${bio(t)}</p>
       <table class="p-table"><thead><tr><th scope="col"><span class="sr"></span></th><th scope="col">Gives to</th><th scope="col">Receives from</th></tr></thead>
       <tbody>${row('Red cells', s1, !plasma)}${row('Plasma', s2, plasma)}</tbody></table>
-      <p class="p-value">Donor value for ${plasma ? 'plasma' : 'red cells'}: <strong>${fmtV(m.V[i])}×</strong> the average donor, ${ord(m.rank[i])} of 8. <button type="button" class="linkbtn" data-jump>How it’s scored</button></p>
+      <p class="p-value">Load per ${plasma ? 'plasma' : 'red-cell'} donor at ${theta}% same-type: <strong>${fmtV(m.V[i])}×</strong> the average, ${theta === 100 ? 'the same as every type' : ord(m.rank[i]) + ' of 8'}. <button type="button" class="linkbtn" data-jump>How it’s scored</button></p>
       <p class="hint">Percentages are the share of people ${where(region)} on the other side of the match. Hover or tap a square to check one pairing.</p>`;
   } else {
     const i = a.d, j = a.r, d = T[i], r = T[j], k = ok(plasma, d, r);
