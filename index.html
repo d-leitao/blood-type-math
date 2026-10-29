@@ -166,6 +166,61 @@ button.ch,button.rh,button.c{appearance:none;border:0;font:inherit;color:inherit
 .notes p{margin:0}
 .notes a{color:var(--ink);text-underline-offset:3px}
 
+.p-value{margin:0;font-size:13.5px;color:var(--ink-2)}
+.p-value strong{font-family:var(--font-data);font-weight:500;color:var(--ink);font-variant-numeric:tabular-nums}
+
+/* value model */
+.model{display:grid;gap:20px;scroll-margin-top:calc(env(safe-area-inset-top,0px) + 16px);border-top:1px solid var(--line);padding-top:28px}
+.model-head{display:grid;gap:8px;max-width:72ch}
+.model h2{font-family:var(--font-display);font-weight:850;font-stretch:115%;font-size:clamp(24px,3.6vw,36px);line-height:1.05;letter-spacing:-.005em;margin:0;text-wrap:balance}
+.model-lede{margin:0;color:var(--ink-2)}
+.steps{display:grid;gap:12px;grid-template-columns:minmax(0,1fr)}
+@media (min-width:760px){.steps{grid-template-columns:1fr 1fr}}
+.step{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px 18px;display:grid;gap:8px;align-content:start;min-width:0}
+.step-n{font-family:var(--font-data);font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.formula{font-family:var(--font-data);font-size:17px;color:var(--ink);line-height:1.6}
+.formula var,.step var{font-family:var(--font-body);font-style:italic}
+.formula sub{font-size:.7em}
+.step p{margin:0;font-size:13.5px;color:var(--ink-2)}
+.model-result{margin:0;font-size:17px;max-width:68ch;text-wrap:pretty}
+.model-result strong{font-family:var(--font-display);font-weight:800;font-stretch:112%}
+.model-charts{display:grid;gap:20px;grid-template-columns:minmax(0,1fr)}
+@media (min-width:900px){.model-charts{grid-template-columns:1fr 1fr}}
+.chart{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px 14px 14px;display:grid;gap:12px;align-content:start;min-width:0}
+.chart-head{display:grid;gap:4px;padding:0 6px}
+.chart h3{margin:0;font-size:15px;font-weight:600}
+.chart .sub{margin:0;font-size:13px;color:var(--ink-2)}
+.chart-axis,.bar-row{display:grid;grid-template-columns:84px minmax(0,1fr) 80px;column-gap:10px;align-items:center}
+.chart-axis{padding:0 8px;min-height:18px;font-family:var(--font-data);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.chart-axis .ax{position:relative;align-self:stretch}
+.chart-axis .ax span{position:absolute;bottom:2px;left:var(--avg);transform:translateX(-50%);white-space:nowrap}
+.chart-axis.edge-r .ax span{transform:translateX(-100%)}
+.bars{display:grid}
+.bar-row{min-height:38px;padding:0 8px;border-radius:8px;transition:background-color .2s}
+button.bar-row{appearance:none;border:0;background:transparent;font:inherit;color:inherit;text-align:left;cursor:pointer;margin:0;width:100%}
+button.bar-row:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
+.bar-row.focus{background:var(--wash)}
+.bl{display:flex;align-items:center;gap:8px;min-width:0}
+.tl.sm{font-size:15px}
+.bt{position:relative;align-self:stretch;display:flex;align-items:center;min-width:0}
+.bf{height:12px;min-width:3px;border-radius:0 4px 4px 0;background:var(--bar);transition:width .45s cubic-bezier(.2,.7,.2,1)}
+.bv{font-family:var(--font-data);font-size:13px;font-variant-numeric:tabular-nums;color:var(--ink);text-align:right;display:grid;line-height:1.25;white-space:nowrap}
+.bv .v2{font-size:10.5px;color:var(--muted)}
+.rank .bar-row.focus .bf{background:var(--ink)}
+.rank .bt::after{content:"";position:absolute;top:0;bottom:0;left:var(--avg);border-left:1px dashed var(--ink-2);pointer-events:none}
+.press .bar-row .bf{background:var(--ink)}
+.press .bar-row.out .bf{background:transparent;box-shadow:inset 0 0 0 1.25px var(--muted)}
+.press .bar-row.out .tl{color:var(--muted)}
+.chart-key{display:flex;flex-wrap:wrap;gap:6px 18px;padding:0 6px;font-size:12px;color:var(--ink-2)}
+.chart-key span{display:flex;align-items:center;gap:7px}
+.chart-key i{display:block;width:18px;height:10px;border-radius:0 3px 3px 0;background:var(--ink)}
+.chart-key i.hollow{background:transparent;box-shadow:inset 0 0 0 1.25px var(--muted)}
+.chart-key i.dash{width:0;height:14px;border-radius:0;background:none;border-left:1px dashed var(--ink-2)}
+.assume{display:grid;gap:6px;max-width:78ch;font-size:13.5px;color:var(--ink-2)}
+.assume h3{margin:0;font-size:12px;font-family:var(--font-data);letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:500}
+.assume ul{margin:0;padding-left:18px;display:grid;gap:4px}
+@media (max-width:480px){.chart-axis,.bar-row{grid-template-columns:70px minmax(0,1fr) 74px;column-gap:8px}}
+
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 
@@ -173,7 +228,7 @@ button.ch,button.rh,button.c{appearance:none;border:0;font:inherit;color:inherit
   <header>
     <div class="eyebrow">ABO and RhD · donor to recipient</div>
     <h1>Blood type compatibility</h1>
-    <p class="lede">Rows are donors, columns are recipients. Every type label carries its share of the population, and the outer edges add up how many people each donor can reach and how large each recipient’s donor pool is.</p>
+    <p class="lede">Rows are donors, columns are recipients. Every type label carries its share of the population, and the outer edges add up how many people each donor can reach and how large each recipient’s donor pool is. Below the grid, a model scores which donor type is most valuable.</p>
   </header>
 
   <div class="controls">
@@ -206,6 +261,57 @@ button.ch,button.rh,button.c{appearance:none;border:0;font:inherit;color:inherit
     </div>
     <aside class="panel" id="panel" aria-live="polite"></aside>
   </div>
+
+  <section class="model" id="value" aria-labelledby="value-h">
+    <div class="model-head">
+      <div class="eyebrow" id="model-eyebrow">Model</div>
+      <h2 id="value-h">Which donor type is most valuable?</h2>
+      <p class="model-lede">A donor is worth more when the patients they can treat have few other donors to rely on. Counting how many people a type can give to overrates common pairings, because a group like A+ can already take blood from most of the population. The model weighs every patient group by how hard it is to supply.</p>
+    </div>
+
+    <div class="steps">
+      <div class="step">
+        <span class="step-n">Step 1 · Pressure on each patient group</span>
+        <div class="formula"><var>P</var><sub>j</sub> = <var>p</var><sub>j</sub> ÷ Pool<sub>j</sub></div>
+        <p>The share of people with type <var>j</var>, divided by the share who can donate to them. At 1.0, every compatible donor is needed just to cover that group. Small values mean donors to spare.</p>
+      </div>
+      <div class="step">
+        <span class="step-n">Step 2 · Value of one donor</span>
+        <div class="formula"><var>V</var><sub>i</sub> = Σ<sub>j ∈ reach(i)</sub> <var>P</var><sub>j</sub></div>
+        <p>Add up the pressure on every group that type <var>i</var> can give to. This is the same as splitting each group’s need evenly across everyone who can donate to it and measuring what lands on one donor. Across the population <var>V</var> averages exactly 1.0, so 2.0 means twice the load of the average donor.</p>
+      </div>
+    </div>
+
+    <p class="model-result" id="model-result"></p>
+
+    <div class="model-charts">
+      <div class="chart rank" id="rank-chart">
+        <div class="chart-head">
+          <h3>Donor value, ranked</h3>
+          <p class="sub">Load carried by one donor of each type, relative to the average donor. Select a type to see where its score comes from.</p>
+        </div>
+        <div class="chart-axis" id="rank-axis"><span></span><span class="ax"><span>Average = 1.0</span></span><span></span></div>
+        <div class="bars" id="m-rank"></div>
+      </div>
+      <div class="chart press">
+        <div class="chart-head">
+          <h3 id="press-h">Where the score comes from</h3>
+          <p class="sub" id="press-sub"></p>
+        </div>
+        <div class="chart-key"><span><i></i>Counted in the score</span><span><i class="hollow"></i><span id="key-out">Not counted</span></span></div>
+        <div class="bars" id="m-press"></div>
+      </div>
+    </div>
+
+    <div class="assume">
+      <h3>What the model assumes</h3>
+      <ul>
+        <li>Patients and donors are spread like the general population, and everyone donates at the same rate.</li>
+        <li>Each patient group’s need is shared evenly across all compatible donors. Hospitals give same-type blood first, which pulls every score toward 1.0. They also give O− in emergencies before the patient is typed, which pushes O− back up.</li>
+        <li>Only ABO and RhD count, and every unit is worth the same. Plasma ignores RhD, so negative and positive types score the same for plasma.</li>
+      </ul>
+    </div>
+  </section>
 
   <section class="notes" aria-labelledby="notes-h">
     <h2 id="notes-h">About the numbers</h2>
@@ -305,7 +411,82 @@ M.addEventListener('click', e => { const t = targetOf(e); if (t) { pin = t; hove
 
 /* panel */
 const P = document.getElementById('panel');
-P.addEventListener('click', e => { const b = e.target.closest('[data-pin]'); if (b) { pin = {t: +b.dataset.pin}; hover = null; update(); } });
+P.addEventListener('click', e => {
+  if (e.target.closest('[data-jump]')) {
+    const still = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    document.getElementById('value').scrollIntoView({behavior: still ? 'auto' : 'smooth', block: 'start'});
+    return;
+  }
+  const b = e.target.closest('[data-pin]'); if (b) { pin = {t: +b.dataset.pin}; hover = null; update(); }
+});
+
+/* value model: P_j = p_j / pool_j, V_i = sum of P_j over the groups i can give to */
+function model(p, plasma){
+  const pool = T.map(r => T.reduce((s, d, i) => s + (ok(plasma, d, r) ? p[i] : 0), 0));
+  const P = p.map((v, j) => pool[j] > 0 ? v / pool[j] : 0);
+  const V = T.map(d => T.reduce((s, r, j) => s + (ok(plasma, d, r) ? P[j] : 0), 0));
+  const rank = V.map(v => 1 + V.filter(w => w > v + 1e-9).length);
+  const order = T.map((_, i) => i).sort((a, b) => (V[b] - V[a]) || (a - b));
+  return {pool, P, V, rank, order};
+}
+const fmtV = v => v >= 10 ? v.toFixed(1) : v.toFixed(2);
+const ord = n => n + (n === 1 ? 'st' : n === 2 ? 'nd' : n === 3 ? 'rd' : 'th');
+
+const MR = document.getElementById('m-rank'), MP = document.getElementById('m-press');
+const rankRows = T.map((t, i) => {
+  const b = mk('button', 'bar-row', `<span class="bl"><span class="tl sm">${t.l}</span></span><span class="bt"><span class="bf"></span></span><span class="bv"></span>`);
+  b.type = 'button'; b.dataset.t = i; MR.appendChild(b); return b;
+});
+const pressRows = T.map(t => {
+  const r = mk('div', 'bar-row', `<span class="bl"><span class="tl sm">${t.l}</span></span><span class="bt"><span class="bf"></span></span><span class="bv"><span class="v1"></span><span class="v2"></span></span>`);
+  MP.appendChild(r); return r;
+});
+const rankOf = e => { const b = e.target.closest('.bar-row'); return b && MR.contains(b) ? {t: +b.dataset.t} : null; };
+MR.addEventListener('pointerover', e => { if (e.pointerType !== 'mouse') return; const t = rankOf(e); if (t && !same(t, hover)) { hover = t; update(); } });
+MR.addEventListener('pointerleave', () => { if (hover) { hover = null; update(); } });
+MR.addEventListener('focusin', e => { const t = rankOf(e); if (t && !same(t, hover)) { hover = t; update(); } });
+MR.addEventListener('focusout', e => { if (!MR.contains(e.relatedTarget)) { hover = null; update(); } });
+MR.addEventListener('click', e => { const t = rankOf(e); if (t) { pin = t; hover = null; update(); } });
+
+function renderModel(m, p, plasma, f){
+  const comp = plasma ? 'plasma' : 'red cells';
+  const place = region === 'World' ? 'World' : region;
+  document.getElementById('model-eyebrow').textContent = `Model · ${plasma ? 'Plasma' : 'Red cells'} · ${place}`;
+
+  const topV = m.V[m.order[0]], tops = m.order.filter(i => Math.abs(m.V[i] - topV) < 1e-9);
+  const lead = tops.length > 1
+    ? `<strong>${joinAnd(tops.map(i => T[i].l))}</strong> are the most valuable ${plasma ? 'plasma' : 'red-cell'} donors ${where(region)}, at ${fmtV(topV)}× the average donor.`
+    : `<strong>${T[tops[0]].l}</strong> is the most valuable ${plasma ? 'plasma' : 'red-cell'} donor ${where(region)}, at ${fmtV(topV)}× the average donor.`;
+  document.getElementById('model-result').innerHTML = lead;
+
+  const maxV = Math.max(...m.V) * 1.06 || 1, avg = 100 / maxV;
+  document.getElementById('rank-chart').style.setProperty('--avg', avg.toFixed(2) + '%');
+  document.getElementById('rank-axis').classList.toggle('edge-r', avg > 78);
+  m.order.forEach((i, k) => {
+    const r = rankRows[i];
+    r.style.order = k;
+    r.querySelector('.bf').style.width = (m.V[i] / maxV * 100).toFixed(2) + '%';
+    r.querySelector('.bv').textContent = fmtV(m.V[i]) + '×';
+    r.classList.toggle('focus', i === f);
+    r.setAttribute('aria-label', `${T[i].l}: ${fmtV(m.V[i])} times the average donor, ${ord(m.rank[i])} of 8. Show breakdown.`);
+  });
+
+  const d = T[f], reach = T.filter(u => ok(plasma, d, u));
+  document.getElementById('press-h').textContent = `Where ${d.l}’s score comes from`;
+  document.getElementById('key-out').textContent = `Can’t receive ${comp} from ${d.l}`;
+  document.getElementById('press-sub').textContent =
+    `Pressure on each patient group, patients ÷ people who can donate ${comp} to them. ${d.l} can give to ${reach.length === 8 ? 'all 8 groups' : reach.length + ' group' + (reach.length > 1 ? 's' : '')}, and their bars add up to ${fmtV(m.V[f])}.`;
+  const maxP = Math.max(...m.P) || 1;
+  T.forEach((u, j) => {
+    const r = pressRows[j], inn = ok(plasma, d, u);
+    r.classList.toggle('out', !inn);
+    r.querySelector('.bf').style.width = (m.P[j] / maxP * 100).toFixed(2) + '%';
+    r.querySelector('.v1').textContent = fmtV(m.P[j]);
+    r.querySelector('.v2').textContent = `${fmt(p[j])} ÷ ${fmt(m.pool[j])}`;
+    r.title = `${u.l} patients are ${fmt(p[j])}% of people ${where(region)}, and ${fmt(m.pool[j])}% can donate ${comp} to them.`;
+    r.setAttribute('aria-label', `${u.l} patients: pressure ${fmtV(m.P[j])}, ${fmt(p[j])}% of people over a donor pool of ${fmt(m.pool[j])}%. ${inn ? 'Counted' : 'Not counted'} for ${d.l}.`);
+  });
+}
 
 function summary(plasma, i, p){
   const t = T[i], g = [], r = []; let gp = 0, rp = 0;
@@ -354,7 +535,7 @@ function reason(plasma, d, r){
   return `${d.l} plasma carries ${joinAnd(hits)}, which would attack the ${joinAnd(hits.map(x => x.slice(5)))} antigen${hits.length > 1 ? 's' : ''} on ${r.l} cells.`;
 }
 
-function renderPanel(a, p, plasma){
+function renderPanel(a, p, plasma, m){
   const place = region === 'World' ? 'World' : region;
   if (a.t != null){
     const i = a.t, t = T[i], s1 = summary(false, i, p), s2 = summary(true, i, p), tags = [];
@@ -369,6 +550,7 @@ function renderPanel(a, p, plasma){
       <p class="p-bio">${bio(t)}</p>
       <table class="p-table"><thead><tr><th scope="col"><span class="sr"></span></th><th scope="col">Gives to</th><th scope="col">Receives from</th></tr></thead>
       <tbody>${row('Red cells', s1, !plasma)}${row('Plasma', s2, plasma)}</tbody></table>
+      <p class="p-value">Donor value for ${plasma ? 'plasma' : 'red cells'}: <strong>${fmtV(m.V[i])}×</strong> the average donor, ${ord(m.rank[i])} of 8. <button type="button" class="linkbtn" data-jump>How it’s scored</button></p>
       <p class="hint">Percentages are the share of people ${where(region)} on the other side of the match. Hover or tap a square to check one pairing.</p>`;
   } else {
     const i = a.d, j = a.r, d = T[i], r = T[j], k = ok(plasma, d, r);
@@ -432,10 +614,13 @@ function update(){
     e.classList.toggle('hl', j === hc);
   });
   M.classList.add('focusing');
-  renderPanel(a, p, plasma);
+  const m = model(p, plasma);
+  renderPanel(a, p, plasma, m);
+  renderModel(m, p, plasma, a.t != null ? a.t : a.d);
 }
 update();
 })();
 </script>
+
 
 </body></html>
