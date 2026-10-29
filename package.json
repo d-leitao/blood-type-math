@@ -1,0 +1,11 @@
+{
+  "name": "blood-type-math",
+  "private": true,
+  "description": "Who can give blood to whom, how common each type is in 123 countries, and a model of which donor types matter most.",
+  "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "build:data": "python3 scripts/build_data.py",
+    "start": "python3 -m http.server 8000"
+  }
+}

@@ -1,10 +1,24 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
-<title>Blood Type Compatibility</title>
-<meta name="claude:viewport-fit-sides" content="cover">
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Blood Type Math</title>
+<meta name="description" content="Who can give blood to whom, how common each type is in 123 countries, and a model of which donor types matter most.">
+<meta property="og:title" content="Blood Type Math">
+<meta property="og:description" content="Who can give blood to whom, how common each type is in 123 countries, and a model of which donor types matter most.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://d-leitao.github.io/blood-type-math/">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
 <style>
+/* Base reset */
+:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0;padding:0}
+img{max-width:100%}
+[hidden]{display:none!important}
+
 /* Layout: a crossmatch grid is the page. Donors run down, recipients run across, every header carries its population share as a bar, and the outer edges total how many people each type reaches. A detail card beside it explains the focused type or pairing. */
 :root{
   --bg:#f2f3f7;
@@ -166,6 +180,11 @@ button.ch,button.rh,button.c{appearance:none;border:0;font:inherit;color:inherit
 .notes p{margin:0}
 .notes a{color:var(--ink);text-underline-offset:3px}
 
+.me{font-family:var(--font-data);font-size:9.5px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;line-height:1;color:var(--ink);border:1px solid var(--ink);border-radius:4px;padding:2px 4px}
+.tag.me-tag{background:var(--ink);color:var(--surface)}
+.foot{font-size:13px;color:var(--muted);border-top:1px solid var(--line);padding-top:18px}
+.foot a{color:var(--ink-2);text-underline-offset:3px}
+.load-error{margin:0;padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink)}
 .p-value{margin:0;font-size:13.5px;color:var(--ink-2)}
 .p-value strong{font-family:var(--font-data);font-weight:500;color:var(--ink);font-variant-numeric:tabular-nums}
 
@@ -223,12 +242,13 @@ button.bar-row:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
 
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
-
+</head>
+<body>
 <div class="page" id="page">
   <header>
     <div class="eyebrow">ABO and RhD · donor to recipient</div>
-    <h1>Blood type compatibility</h1>
-    <p class="lede">Rows are donors, columns are recipients. Every type label carries its share of the population, and the outer edges add up how many people each donor can reach and how large each recipient’s donor pool is. Below the grid, a model scores which donor type is most valuable.</p>
+    <h1>Blood type math</h1>
+    <p class="lede">Who can give blood to whom, how common each type is, and which donors matter most. In the compatibility matrix, rows are donors and columns are recipients. Every type label carries its share of the population, and the outer edges add up how many people each donor can reach and how large each recipient’s donor pool is. Below the grid, a model scores which donor type is most valuable.</p>
   </header>
 
   <div class="controls">
@@ -242,6 +262,10 @@ button.bar-row:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
     <div class="field">
       <label class="field-label" for="region">Population</label>
       <select id="region"></select>
+    </div>
+    <div class="field">
+      <label class="field-label" for="mine">Your type</label>
+      <select id="mine"></select>
     </div>
   </div>
 
@@ -319,17 +343,26 @@ button.bar-row:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
     <p>Country figures come from national blood services as compiled in <a href="https://en.wikipedia.org/wiki/Blood_type_distribution_by_country" target="_blank" rel="noopener">Blood type distribution by country</a> on Wikipedia. Many are measured on donor populations rather than whole countries. Rows the source doesn’t total to 100% (the UK’s sums to 96%) are rescaled. Portugal’s figures trace to the Portuguese Blood and Transplantation Institute (IPST) and assume RhD is independent of ABO.</p>
     <p id="world-note"></p>
   </section>
+
+  <footer class="foot">Made by d-leitao. <a href="https://github.com/d-leitao/blood-type-math">Code, data and model on GitHub</a>.</footer>
 </div>
 
-<script>
-(function(){
-const D = {"r":{"World":[2.71,37.55,2.09,27.04,1.15,22.98,0.38,6.09],"Albania":[6.0,34.1,5.5,31.2,2.6,14.5,0.9,5.2],"Algeria":[6.6,40.0,2.3,30.0,1.1,15.0,0.75,4.25],"Argentina":[4.29,50.34,2.98,31.09,0.74,8.2,0.2,2.16],"Armenia":[2.0,29.0,3.7,46.3,1.0,12.0,0.4,5.6],"Australia":[6.86,37.25,5.88,31.37,1.96,11.76,0.98,3.92],"Austria":[6.03,30.17,7.04,37.2,2.01,12.07,0.45,5.03],"Azerbaijan":[3.3,29.8,3.4,30.0,2.4,21.1,1.0,9.0],"Bahrain":[3.41,50.5,1.39,15.99,1.08,23.55,0.26,3.82],"Bangladesh":[0.53,29.21,0.48,26.3,0.6,33.12,0.17,9.59],"Belarus":[5.7,32.3,5.4,30.6,2.7,15.3,1.2,6.8],"Belgium":[7.0,38.0,6.0,34.0,1.5,8.5,1.0,4.0],"Bhutan":[0.06,38.14,0.04,29.44,0.04,23.86,0.01,8.41],"Bolivia":[4.82,56.63,3.0,22.47,0.59,11.11,0.11,1.26],"Bosnia":[5.0,31.0,7.0,36.0,2.0,12.0,1.0,6.0],"Brazil":[9.0,36.0,8.0,34.0,2.0,8.0,0.5,2.5],"Bulgaria":[5.0,28.0,6.6,37.4,2.2,12.8,1.2,6.8],"Burkina Faso":[3.36,39.94,1.75,20.79,2.22,26.34,0.43,5.17],"Cambodia":[1.3,46.7,0.8,27.2,0.5,18.5,0.1,4.9],"Cameroon":[1.79,46.83,0.92,24.15,0.8,21.06,0.16,4.29],"Canada":[7.0,39.0,6.0,36.0,1.4,7.6,0.5,2.5],"Chile":[4.19,55.01,2.14,28.08,0.61,8.02,0.14,1.81],"Colombia":[5.13,61.3,2.7,21.11,0.7,7.28,0.31,1.47],"Costa Rica":[3.4,49.7,1.9,28.5,0.9,12.4,0.2,3.0],"Croatia":[5.0,29.0,6.0,36.0,3.0,15.0,1.0,5.0],"Cuba":[3.6,45.8,2.8,33.5,1.0,10.2,0.2,2.9],"Cyprus":[3.85,35.22,3.48,40.35,0.87,11.11,0.4,4.72],"Czech Republic":[5.0,27.0,6.0,36.0,3.0,15.0,1.0,7.0],"DRC":[1.0,59.5,0.3,21.3,0.2,15.2,0.1,2.4],"Denmark":[6.0,35.0,7.0,37.0,2.0,8.0,1.0,4.0],"Dominican Republic":[3.7,47.2,2.1,26.4,1.4,16.9,0.2,2.1],"Ecuador":[2.38,75.0,0.7,14.0,0.3,7.1,0.02,0.5],"El Salvador":[1.0,62.0,1.0,23.0,0.7,11.0,0.3,1.0],"Estonia":[4.3,29.5,4.5,30.8,3.0,20.7,0.9,6.3],"Ethiopia":[3.0,39.0,2.0,28.0,1.0,21.0,1.0,5.0],"Fiji":[1.0,43.0,0.7,33.3,0.5,16.5,0.2,4.8],"Finland":[5.0,28.0,6.0,35.0,2.0,16.0,1.0,7.0],"France":[6.5,36.5,6.8,38.2,1.4,7.7,0.4,2.5],"Gabon":[1.35,57.49,0.48,20.5,0.41,17.17,0.06,2.54],"Georgia":[6.23,34.97,5.73,32.46,2.11,11.96,0.5,6.03],"Germany":[6.0,35.0,6.0,37.0,2.0,9.0,1.0,4.0],"Ghana":[4.51,53.91,1.3,17.64,1.3,18.34,0.2,2.81],"Greece":[6.6,37.8,5.7,32.2,2.0,11.0,0.7,4.0],"Guinea":[2.0,46.88,0.9,21.64,1.0,22.86,0.2,4.52],"Honduras":[2.76,58.67,1.73,25.51,0.61,7.96,0.2,2.55],"Hong Kong":[0.69,42.33,0.1,25.22,0.2,25.52,0.1,5.84],"Hungary":[5.0,27.0,7.0,33.0,3.0,16.0,1.0,8.0],"Iceland":[8.32,47.13,4.75,26.93,1.58,8.91,0.4,1.98],"India":[2.03,32.53,1.36,21.8,2.0,32.1,0.48,7.7],"Indonesia":[0.18,36.82,0.13,25.87,0.15,28.85,0.04,7.96],"Iran":[5.0,36.5,2.0,27.0,2.5,22.2,0.8,4.0],"Iraq":[3.6,32.1,2.7,25.0,2.7,25.6,0.9,7.4],"Ireland":[8.0,47.0,5.0,26.0,2.0,9.0,1.0,2.0],"Israel":[3.0,32.0,4.0,34.0,2.0,17.0,1.0,7.0],"Italy":[7.0,39.0,6.0,36.0,1.5,7.5,0.5,2.5],"Ivory Coast":[3.73,47.24,1.54,20.19,1.48,21.7,0.3,3.82],"Jamaica":[3.5,51.1,2.0,20.0,1.0,20.0,0.5,1.9],"Japan":[0.15,29.9,0.2,39.8,0.1,19.9,0.05,9.9],"Jordan":[4.44,33.3,4.0,33.12,2.08,16.69,0.04,6.33],"Kazakhstan":[2.31,30.79,2.21,29.89,1.81,24.27,0.4,8.32],"Kenya":[1.8,45.6,1.0,25.2,0.9,21.28,0.02,4.2],"Laos":[0.2,37.52,0.1,19.73,0.2,35.36,0.05,6.85],"Latvia":[5.4,30.6,6.0,31.0,3.0,17.0,1.0,6.0],"Lebanon":[7.7,38.4,6.5,32.3,1.7,9.5,0.7,3.2],"Libya":[7.89,46.35,3.52,22.67,1.78,12.16,0.73,4.89],"Liechtenstein":[6.0,34.0,6.5,37.0,1.8,10.0,0.7,4.0],"Lithuania":[7.02,36.11,6.02,33.1,2.01,11.03,0.7,4.01],"Luxembourg":[6.0,35.0,6.0,37.0,2.0,9.0,1.0,4.0],"Macao":[0.33,41.52,0.09,26.12,0.17,25.42,0.05,6.3],"Malaysia":[0.17,34.32,0.15,30.35,0.14,27.37,0.04,7.46],"Malta":[5.0,38.0,4.5,41.0,1.0,7.0,0.5,3.0],"Mauritania":[2.8,46.3,1.6,26.68,1.1,17.47,0.2,3.85],"Mauritius":[1.7,38.3,1.0,26.0,1.0,25.0,0.3,6.7],"Mexico":[2.73,59.09,1.21,26.23,0.4,8.53,0.08,1.73],"Moldova":[5.0,28.5,6.0,31.8,3.0,17.6,1.1,7.0],"Mongolia":[0.34,37.99,0.21,23.09,0.27,30.19,0.01,7.9],"Morocco":[4.47,42.05,3.08,30.62,1.49,13.92,0.4,3.98],"Myanmar":[0.3,35.7,0.2,23.8,0.3,32.7,0.05,6.95],"Namibia":[4.22,50.58,1.71,20.49,1.69,20.21,0.08,1.02],"Nepal":[0.29,34.51,0.2,35.59,0.2,26.57,0.1,2.55],"Netherlands":[6.8,38.2,6.4,36.6,1.3,7.7,0.5,2.5],"Nicaragua":[1.0,62.0,1.0,20.0,0.7,11.0,0.3,4.0],"Nigeria":[2.7,50.23,1.16,21.61,1.05,19.59,0.19,3.47],"North Korea":[0.08,27.15,0.1,31.08,0.1,30.15,0.03,11.32],"North Macedonia":[5.0,30.0,6.0,34.0,3.0,15.0,1.0,6.0],"Norway":[5.8,33.2,7.4,41.6,1.2,6.8,0.6,3.4],"Pakistan":[3.1,30.04,2.22,21.53,3.13,30.24,0.91,8.83],"Papua New Guinea":[1.76,54.5,0.49,31.51,0.2,9.39,0.1,2.05],"Paraguay":[5.89,63.08,2.97,21.32,0.49,4.72,0.15,1.38],"Peru":[1.4,70.0,0.5,18.4,0.28,7.8,0.02,1.6],"Philippines":[0.1,45.9,0.1,22.9,0.1,24.9,0.03,5.97],"Poland":[6.0,31.0,6.0,32.0,2.0,15.0,1.0,7.0],"Portugal":[6.1,36.2,6.8,39.8,1.1,6.6,0.5,2.9],"China":[0.4,34.03,0.25,27.63,0.2,28.93,0.15,8.41],"Romania":[5.0,28.0,6.0,37.0,2.0,14.0,1.0,7.0],"Russia":[6.0,36.0,4.0,31.0,1.0,19.0,0.9,2.1],"Saudi Arabia":[4.3,51.4,2.15,17.2,1.08,19.25,0.32,4.3],"Serbia":[6.08,31.92,6.72,35.28,2.4,12.6,0.8,4.2],"Singapore":[0.6,44.7,0.3,23.9,0.3,24.5,0.1,5.6],"Slovakia":[4.8,27.2,6.3,35.7,2.7,15.3,1.2,6.8],"Slovenia":[7.0,31.0,7.0,33.0,3.0,12.0,1.0,6.0],"Somalia":[7.2,52.8,2.64,19.36,1.68,12.32,0.48,3.52],"South Africa":[6.0,39.0,5.0,32.0,2.0,12.0,1.0,3.0],"South Korea":[0.1,27.43,0.1,34.03,0.1,26.73,0.0,11.51],"Spain":[9.0,35.0,7.0,36.0,2.0,8.0,0.5,2.5],"Sri Lanka":[2.12,43.42,1.04,21.0,1.25,25.78,0.26,5.13],"Sudan":[3.52,48.24,1.81,27.84,0.8,15.28,0.2,2.31],"Sweden":[6.0,32.0,7.0,37.0,2.0,10.0,1.0,5.0],"Switzerland":[6.0,35.0,7.0,38.0,1.0,8.0,1.0,4.0],"Syria":[5.0,43.0,3.0,30.0,1.0,14.0,0.3,3.7],"Taiwan":[0.28,43.9,0.01,25.9,0.01,23.9,0.01,6.0],"Thailand":[0.2,40.8,0.1,16.9,0.2,36.8,0.03,4.97],"Tunisia":[4.14,41.86,2.79,28.21,1.62,16.38,0.45,4.55],"Turkey":[4.4,29.4,5.5,38.3,2.1,13.2,0.7,6.4],"Uganda":[1.01,49.24,0.49,24.09,0.41,20.27,0.09,4.41],"Ukraine":[5.0,32.0,6.0,34.0,2.0,15.0,1.0,5.0],"United Arab Emirates":[4.3,44.1,2.1,21.9,2.0,20.9,0.4,4.3],"United Kingdom":[8.33,37.5,9.38,31.25,2.08,8.33,1.04,2.08],"United States":[6.6,37.4,6.3,35.7,1.5,8.5,0.6,3.4],"Uzbekistan":[1.68,29.42,1.77,30.93,1.42,24.98,0.53,9.27],"Venezuela":[4.0,58.3,1.5,28.2,0.4,5.6,0.1,1.9],"Vietnam":[0.3,42.12,0.1,21.11,0.2,31.11,0.02,5.03],"Yemen":[3.66,47.89,2.1,27.53,1.17,15.34,0.16,2.14],"Zimbabwe":[1.7,45.7,1.0,28.8,0.4,18.0,0.3,4.1]},"meta":{"n":123,"popbn":7.4}};
-const T = [
-  {l:'O−', abo:'O', A:0,B:0,D:0},{l:'O+', abo:'O', A:0,B:0,D:1},
-  {l:'A−', abo:'A', A:1,B:0,D:0},{l:'A+', abo:'A', A:1,B:0,D:1},
-  {l:'B−', abo:'B', A:0,B:1,D:0},{l:'B+', abo:'B', A:0,B:1,D:1},
-  {l:'AB−',abo:'AB',A:1,B:1,D:0},{l:'AB+',abo:'AB',A:1,B:1,D:1}
-];
+<script type="module">
+import { TYPES as T, compatible, scoreTypes, parseCSV } from './model.js';
+
+(async function(){
+let D;
+try {
+  const res = await fetch('data.csv');
+  if (!res.ok) throw new Error(res.status + ' ' + res.statusText);
+  D = { r: parseCSV(await res.text()), meta: { n: 123, popbn: 7.4 } };
+} catch (err) {
+  const msg = document.createElement('p');
+  msg.className = 'load-error';
+  msg.textContent = 'The prevalence data (data.csv) could not be loaded: ' + err.message + '. If you opened this file directly from disk, serve the folder instead, for example with "python3 -m http.server".';
+  document.querySelector('.workspace').replaceWith(msg);
+  return;
+}
 const FEATURED = ['World','Portugal','Spain','France','Germany','Italy','United Kingdom','United States','Brazil','India','China','Japan','Nigeria'];
 const THE = new Set(['United States','United Kingdom','Netherlands','Philippines','Czech Republic','Dominican Republic','United Arab Emirates','DRC']);
 const CHECK = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.4 8.6l3 3 6.2-7.2" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
@@ -340,16 +373,15 @@ const fmt = v => v >= 99.95 ? '100' : v < 1 ? v.toFixed(2).replace(/0$/, '') : v
 const joinAnd = a => a.length <= 1 ? a.join('') : a.slice(0, -1).join(', ') + ' and ' + a[a.length - 1];
 const antigens = t => ['A','B','D'].filter(x => t[x]);
 const antibodies = t => ['A','B'].filter(x => !t[x]).map(x => 'anti-' + x);
-const ok = (plasma, d, r) => plasma
-  ? !((!d.A && r.A) || (!d.B && r.B))
-  : (!d.A || r.A) && (!d.B || r.B) && (!d.D || r.D);
+const ok = (plasma, d, r) => compatible(plasma ? 'plasma' : 'red', d, r);
 
 function load(k, d){ try { const v = localStorage.getItem(k); return v == null ? d : v; } catch(e){ return d; } }
 function save(k, v){ try { localStorage.setItem(k, v); } catch(e){} }
 
 let mode = load('btc-mode', 'red'); if (mode !== 'red' && mode !== 'plasma') mode = 'red';
 let region = load('btc-region', 'World'); if (!D.r[region]) region = 'World';
-let pin = {t: 0};
+let me = parseInt(load('btc-me', '-1'), 10); if (!(me >= 0 && me < 8)) me = -1;
+let pin = {t: me >= 0 ? me : 0};
 let hover = null;
 
 document.getElementById('lg-ok').innerHTML = CHECK;
@@ -368,6 +400,17 @@ sel.append(g1, g2);
 sel.value = region;
 sel.addEventListener('change', () => { region = sel.value; save('btc-region', region); update(); });
 
+const mineSel = document.getElementById('mine');
+mineSel.appendChild(new Option('Not set', '-1'));
+T.forEach((t, i) => mineSel.appendChild(new Option(t.l, String(i))));
+mineSel.value = String(me);
+mineSel.addEventListener('change', () => {
+  me = parseInt(mineSel.value, 10);
+  save('btc-me', String(me));
+  if (me >= 0) pin = {t: me};
+  hover = null; update();
+});
+
 document.querySelectorAll('.seg button').forEach(b => b.addEventListener('click', () => {
   mode = b.dataset.mode; save('btc-mode', mode); update();
 }));
@@ -381,13 +424,13 @@ const chips = (t, kind) => kind === 'ag'
 
 M.appendChild(mk('div', 'corner', '<span>Recipient →</span><span>Donor ↓</span>'));
 const colH = T.map((t, j) => {
-  const b = mk('button', 'ch', `<span class="num"></span><span class="ch-barwrap"><span class="ch-bar"></span></span><span class="tl">${t.l}</span><span class="chips" aria-hidden="true">${chips(t, 'ag')}</span>`);
+  const b = mk('button', 'ch', `<span class="num"></span><span class="ch-barwrap"><span class="ch-bar"></span></span><span class="tl">${t.l}</span><span class="chips" aria-hidden="true">${chips(t, 'ag')}</span><span class="me" hidden>You</span>`);
   b.type = 'button'; b.dataset.t = j; M.appendChild(b); return b;
 });
 M.appendChild(mk('div', 'edge-h reach-h', '<strong>Reach</strong><span>people who can receive</span>'));
 const rowH = [], cells = [], reachC = [];
 T.forEach((t, i) => {
-  const b = mk('button', 'rh', `<span class="rh-id"><span class="tl">${t.l}</span><span class="chips" aria-hidden="true"></span></span><span class="rh-val"><span class="rh-bar"><span class="fill"></span></span><span class="num"></span></span>`);
+  const b = mk('button', 'rh', `<span class="rh-id"><span class="tl">${t.l}</span><span class="chips" aria-hidden="true"></span><span class="me" hidden>You</span></span><span class="rh-val"><span class="rh-bar"><span class="fill"></span></span><span class="num"></span></span>`);
   b.type = 'button'; b.dataset.t = i; M.appendChild(b); rowH.push(b);
   cells[i] = T.map((u, j) => { const c = mk('button', 'c'); c.type = 'button'; c.dataset.d = i; c.dataset.r = j; M.appendChild(c); return c; });
   const e = mk('div', 'edge reach', '<span class="num"></span><span class="track"><span class="fill"></span></span>');
@@ -420,21 +463,17 @@ P.addEventListener('click', e => {
   const b = e.target.closest('[data-pin]'); if (b) { pin = {t: +b.dataset.pin}; hover = null; update(); }
 });
 
-/* value model: P_j = p_j / pool_j, V_i = sum of P_j over the groups i can give to */
+/* value model (see model.js) */
 function model(p, plasma){
-  const pool = T.map(r => T.reduce((s, d, i) => s + (ok(plasma, d, r) ? p[i] : 0), 0));
-  const P = p.map((v, j) => pool[j] > 0 ? v / pool[j] : 0);
-  const V = T.map(d => T.reduce((s, r, j) => s + (ok(plasma, d, r) ? P[j] : 0), 0));
-  const rank = V.map(v => 1 + V.filter(w => w > v + 1e-9).length);
-  const order = T.map((_, i) => i).sort((a, b) => (V[b] - V[a]) || (a - b));
-  return {pool, P, V, rank, order};
+  const r = scoreTypes(p, plasma ? 'plasma' : 'red');
+  return {pool: r.pool, P: r.pressure, V: r.value, rank: r.rank, order: r.order};
 }
 const fmtV = v => v >= 10 ? v.toFixed(1) : v.toFixed(2);
 const ord = n => n + (n === 1 ? 'st' : n === 2 ? 'nd' : n === 3 ? 'rd' : 'th');
 
 const MR = document.getElementById('m-rank'), MP = document.getElementById('m-press');
 const rankRows = T.map((t, i) => {
-  const b = mk('button', 'bar-row', `<span class="bl"><span class="tl sm">${t.l}</span></span><span class="bt"><span class="bf"></span></span><span class="bv"></span>`);
+  const b = mk('button', 'bar-row', `<span class="bl"><span class="tl sm">${t.l}</span><span class="me" hidden>You</span></span><span class="bt"><span class="bf"></span></span><span class="bv"></span>`);
   b.type = 'button'; b.dataset.t = i; MR.appendChild(b); return b;
 });
 const pressRows = T.map(t => {
@@ -457,7 +496,12 @@ function renderModel(m, p, plasma, f){
   const lead = tops.length > 1
     ? `<strong>${joinAnd(tops.map(i => T[i].l))}</strong> are the most valuable ${plasma ? 'plasma' : 'red-cell'} donors ${where(region)}, at ${fmtV(topV)}× the average donor.`
     : `<strong>${T[tops[0]].l}</strong> is the most valuable ${plasma ? 'plasma' : 'red-cell'} donor ${where(region)}, at ${fmtV(topV)}× the average donor.`;
-  document.getElementById('model-result').innerHTML = lead;
+  const mine = me < 0
+    ? ' Set your type above to see where you rank.'
+    : tops.includes(me)
+      ? (tops.length > 1 ? ' That includes your type.' : ' That’s your type.')
+      : ` Your type, ${T[me].l}, scores ${fmtV(m.V[me])}×, ${ord(m.rank[me])} of 8.`;
+  document.getElementById('model-result').innerHTML = lead + mine;
 
   const maxV = Math.max(...m.V) * 1.06 || 1, avg = 100 / maxV;
   document.getElementById('rank-chart').style.setProperty('--avg', avg.toFixed(2) + '%');
@@ -468,7 +512,7 @@ function renderModel(m, p, plasma, f){
     r.querySelector('.bf').style.width = (m.V[i] / maxV * 100).toFixed(2) + '%';
     r.querySelector('.bv').textContent = fmtV(m.V[i]) + '×';
     r.classList.toggle('focus', i === f);
-    r.setAttribute('aria-label', `${T[i].l}: ${fmtV(m.V[i])} times the average donor, ${ord(m.rank[i])} of 8. Show breakdown.`);
+    r.setAttribute('aria-label', `${T[i].l}${i === me ? ' (your type)' : ''}: ${fmtV(m.V[i])} times the average donor, ${ord(m.rank[i])} of 8. Show breakdown.`);
   });
 
   const d = T[f], reach = T.filter(u => ok(plasma, d, u));
@@ -546,7 +590,7 @@ function renderPanel(a, p, plasma, m){
     const row = (label, s, cur) => `<tr class="${cur ? 'cur' : ''}"><th scope="row">${label}</th><td><span class="v">${fmt(s.gp)}%</span><span class="ts">${listTxt(s.g)}</span></td><td><span class="v">${fmt(s.rp)}%</span><span class="ts">${listTxt(s.r)}</span></td></tr>`;
     P.innerHTML = `<div class="p-eyebrow">Type profile · ${place}</div>
       <div class="p-head"><span class="p-type">${t.l}</span><div><div class="p-pct">${fmt(p[i])}%</div><p class="p-sub">of people ${where(region)}, ${rankTxt(p, i)}</p></div></div>
-      ${tags.length ? `<div class="tags">${tags.map(x => `<span class="tag">${x}</span>`).join('')}</div>` : ''}
+      ${tags.length || i === me ? `<div class="tags">${i === me ? '<span class="tag me-tag">Your type</span>' : ''}${tags.map(x => `<span class="tag">${x}</span>`).join('')}</div>` : ''}
       <p class="p-bio">${bio(t)}</p>
       <table class="p-table"><thead><tr><th scope="col"><span class="sr"></span></th><th scope="col">Gives to</th><th scope="col">Receives from</th></tr></thead>
       <tbody>${row('Red cells', s1, !plasma)}${row('Plasma', s2, plasma)}</tbody></table>
@@ -613,6 +657,9 @@ function update(){
     e.querySelector('.fill').style.width = Math.min(100, pool[j]).toFixed(2) + '%';
     e.classList.toggle('hl', j === hc);
   });
+  colH.forEach((h, j) => { h.querySelector('.me').hidden = j !== me; });
+  rowH.forEach((h, i) => { h.querySelector('.me').hidden = i !== me; });
+  rankRows.forEach((r, i) => { r.querySelector('.me').hidden = i !== me; });
   M.classList.add('focusing');
   const m = model(p, plasma);
   renderPanel(a, p, plasma, m);
@@ -621,6 +668,5 @@ function update(){
 update();
 })();
 </script>
-
-
-</body></html>
+</body>
+</html>
