@@ -188,22 +188,18 @@ button.ch,button.rh,button.c{appearance:none;border:0;font:inherit;color:inherit
 .details a{color:var(--ink);text-underline-offset:3px}
 .details code{font-family:var(--font-data);font-size:12.5px;color:var(--ink);white-space:normal}
 
-.me{font-family:var(--font-data);font-size:9.5px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;line-height:1;color:var(--ink);border:1px solid var(--ink);border-radius:4px;padding:2px 4px}
-.tag.me-tag{background:var(--ink);color:var(--surface)}
-.mine{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px}
-.mine-btn{appearance:none;font:inherit;font-size:13px;font-weight:600;padding:5px 13px;border-radius:999px;border:1.5px dashed var(--ink-2);background:transparent;color:var(--ink);cursor:pointer}
-.mine-btn:hover{border-style:solid;background:var(--wash)}
-.mine-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.invite-hint{margin:0;padding:12px 16px 0;font-size:13px;color:var(--ink-2);display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;position:sticky;left:0}
-.invite-hint .linkbtn{font-size:13px;color:var(--ink-2)}
+.invite-hint{margin:0;padding:12px 16px 0;font-size:13px;color:var(--ink-2);display:flex;align-items:center;gap:8px;position:sticky;left:0}
 .invite-hint::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--accent);flex:none;animation:beat 1.6s ease-in-out infinite}
 @keyframes beat{50%{transform:scale(1.5);opacity:.55}}
-.matrix.invite .ch:not(.hl){animation:glow 2.2s ease-in-out .6s 2}
-@keyframes glow{50%{background:var(--wash)}}
 .foot{font-size:13px;color:var(--muted)}
 .foot a{color:var(--ink-2);text-underline-offset:3px}
 .load-error{margin:0;padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink)}
 .p-value{margin:0;font-size:13.5px;color:var(--ink-2)}
+.p-top{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.p-clear{appearance:none;border:1px solid var(--line);background:transparent;color:var(--ink-2);font:inherit;font-size:12.5px;padding:3px 10px;border-radius:999px;cursor:pointer}
+.p-clear:hover{color:var(--ink);border-color:var(--ink-2)}
+.p-clear:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.p-empty{margin:0;font-size:15px;color:var(--ink-2)}
 .p-value strong{font-family:var(--font-data);font-weight:500;color:var(--ink);font-variant-numeric:tabular-nums}
 
 /* value model */
@@ -297,7 +293,7 @@ button.bar-row:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
 
   <div class="workspace">
     <div class="matrix-scroll">
-      <p class="invite-hint" id="invite-hint" hidden>Tap your blood type in the grid. <button type="button" class="linkbtn" id="skip-pick">I don’t know it</button></p>
+      <p class="invite-hint">Tap your blood type in the grid. Tap again to clear.</p>
       <div class="matrix" id="matrix"></div>
     </div>
     <aside class="panel" id="panel" aria-live="polite"></aside>
@@ -313,7 +309,7 @@ button.bar-row:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
       <div class="chart rank" id="rank-chart">
         <div class="chart-head">
           <h3>Load per donor</h3>
-          <p class="sub">1.0 is the average donor. Tap a type to break it down.</p>
+          <p class="sub">1.0 is the average donor. Tap a type to highlight it.</p>
         </div>
         <div class="theta">
           <div class="theta-head">
@@ -403,8 +399,8 @@ function save(k, v){ try { localStorage.setItem(k, v); } catch(e){} }
 
 let mode = load('btc-mode', 'red'); if (mode !== 'red' && mode !== 'plasma') mode = 'red';
 let region = load('btc-region', 'World'); if (!D.r[region]) region = 'World';
-let me = parseInt(load('btc-me', '-1'), 10); if (!(me >= 0 && me < 8)) me = -1;
-let pin = {t: me >= 0 ? me : 0};
+let saved = parseInt(load('btc-sel', load('btc-me', '-1')), 10);
+let pin = saved >= 0 && saved < 8 ? {t: saved} : null;  // the highlight: a type {t}, a pairing {d, r}, or nothing
 let theta = parseInt(load('btc-theta', '70'), 10); if (!(theta >= 0 && theta <= 100)) theta = 70;
 let hover = null;
 
@@ -425,14 +421,12 @@ sel.value = region;
 sel.addEventListener('change', () => { region = sel.value; save('btc-region', region); update(); });
 
 /* your type: claimed from the grid, the ranking or the panel */
-let skipPick = load('btc-skip', '') === 'on';
-const picking = () => me < 0 && !skipPick;
-function setMe(i){
-  me = i; save('btc-me', String(i));
-  if (i >= 0) pin = {t: i};
-  hover = null; update();
+function setPin(t){
+  pin = t; hover = null;
+  save('btc-sel', pin && pin.t != null ? String(pin.t) : '-1');
+  update();
 }
-document.getElementById('skip-pick').addEventListener('click', () => { skipPick = true; save('btc-skip', 'on'); update(); });
+const toggle = t => setPin(same(t, pin) ? null : t);
 
 const thetaIn = document.getElementById('theta');
 thetaIn.value = String(theta);
@@ -451,7 +445,7 @@ const chips = (t, kind) => kind === 'ag'
 
 M.appendChild(mk('div', 'corner', '<span>Recipient →</span><span>Donor ↓</span>'));
 const colH = T.map((t, j) => {
-  const b = mk('button', 'ch', `<span class="num"></span><span class="ch-barwrap"><span class="ch-bar"></span></span><span class="tl">${t.l}</span><span class="chips" aria-hidden="true">${chips(t, 'ag')}</span><span class="me" hidden>You</span>`);
+  const b = mk('button', 'ch', `<span class="num"></span><span class="ch-barwrap"><span class="ch-bar"></span></span><span class="tl">${t.l}</span><span class="chips" aria-hidden="true">${chips(t, 'ag')}</span>`);
   b.type = 'button'; b.dataset.t = j; M.appendChild(b); return b;
 });
 M.appendChild(mk('div', 'edge-h reach-h', '<strong>Reach</strong><span>people who can receive</span>'));
@@ -472,12 +466,12 @@ const targetOf = e => {
   if (!b || !M.contains(b)) return null;
   return b.classList.contains('c') ? {d: +b.dataset.d, r: +b.dataset.r} : {t: +b.dataset.t};
 };
-const same = (a, b) => a && b && a.t === b.t && a.d === b.d && a.r === b.r;
+const same = (a, b) => !!(a && b && a.t === b.t && a.d === b.d && a.r === b.r);
 M.addEventListener('pointerover', e => { if (e.pointerType !== 'mouse') return; const t = targetOf(e); if (t && !same(t, hover)) { hover = t; update(); } });
 M.addEventListener('pointerleave', () => { if (hover) { hover = null; update(); } });
 M.addEventListener('focusin', e => { const t = targetOf(e); if (t && !same(t, hover)) { hover = t; update(); } });
 M.addEventListener('focusout', e => { if (hover && !M.contains(e.relatedTarget)) { hover = null; update(); } });
-M.addEventListener('click', e => { const t = targetOf(e); if (!t) return; if (t.t != null && picking()) { setMe(t.t); return; } pin = t; hover = null; update(); });
+M.addEventListener('click', e => { const t = targetOf(e); if (t) toggle(t); });
 
 /* panel */
 const P = document.getElementById('panel');
@@ -487,8 +481,8 @@ P.addEventListener('click', e => {
     document.getElementById('value').scrollIntoView({behavior: still ? 'auto' : 'smooth', block: 'start'});
     return;
   }
-  const claim = e.target.closest('[data-me]'); if (claim) { setMe(+claim.dataset.me); return; }
-  const b = e.target.closest('[data-pin]'); if (b) { pin = {t: +b.dataset.pin}; hover = null; update(); }
+  if (e.target.closest('[data-clear]')) { setPin(null); return; }
+  const b = e.target.closest('[data-pin]'); if (b) setPin({t: +b.dataset.pin});
 });
 
 /* value model (see model.js) */
@@ -502,7 +496,7 @@ const ord = n => n + (n === 1 ? 'st' : n === 2 ? 'nd' : n === 3 ? 'rd' : 'th');
 
 const MR = document.getElementById('m-rank'), MP = document.getElementById('m-press');
 const rankRows = T.map((t, i) => {
-  const b = mk('button', 'bar-row', `<span class="bl"><span class="tl sm">${t.l}</span><span class="me" hidden>You</span></span><span class="bt"><span class="bf"></span></span><span class="bv"></span>`);
+  const b = mk('button', 'bar-row', `<span class="bl"><span class="tl sm">${t.l}</span></span><span class="bt"><span class="bf"></span></span><span class="bv"></span>`);
   b.type = 'button'; b.dataset.t = i; MR.appendChild(b); return b;
 });
 const pressRows = T.map(t => {
@@ -514,9 +508,10 @@ MR.addEventListener('pointerover', e => { if (e.pointerType !== 'mouse') return;
 MR.addEventListener('pointerleave', () => { if (hover) { hover = null; update(); } });
 MR.addEventListener('focusin', e => { const t = rankOf(e); if (t && !same(t, hover)) { hover = t; update(); } });
 MR.addEventListener('focusout', e => { if (hover && !MR.contains(e.relatedTarget)) { hover = null; update(); } });
-MR.addEventListener('click', e => { const t = rankOf(e); if (!t) return; if (picking()) { setMe(t.t); return; } pin = t; hover = null; update(); });
+MR.addEventListener('click', e => { const t = rankOf(e); if (t) toggle(t); });
 
 function renderModel(m, p, plasma, f){
+  const top = m.order[0], b = f == null ? top : f;  // breakdown shows the highlighted type, else the top one
   const comp = plasma ? 'plasma' : 'red cells';
   document.getElementById('theta-out').textContent = theta + '%';
 
@@ -524,8 +519,9 @@ function renderModel(m, p, plasma, f){
   const lead = theta === 100
     ? 'At 100% same-type, every donor carries the average load.'
     : `<strong>${joinAnd(tops.map(i => T[i].l))}</strong> ${plasma ? 'plasma' : 'red-cell'} donations go furthest ${where(region)}: ${fmtV(topV)}× the average donor.`;
-  const mine = theta === 100 || tops.includes(me) ? '' : me < 0 ? (skipPick ? '' : ' Tap your type in the grid to compare.') : ` Yours, ${T[me].l}: ${fmtV(m.V[me])}×, ${ord(m.rank[me])} of 8.`;
-  document.getElementById('model-result').innerHTML = lead + mine;
+  const sel = pin && pin.t != null ? pin.t : null;
+  const extra = theta === 100 || sel == null || tops.includes(sel) ? '' : ` ${T[sel].l}: ${fmtV(m.V[sel])}×, ${ord(m.rank[sel])} of 8.`;
+  document.getElementById('model-result').innerHTML = lead + extra;
 
   const maxV = Math.max(...m.V) * 1.06 || 1, avg = 100 / maxV;
   document.getElementById('rank-chart').style.setProperty('--avg', avg.toFixed(2) + '%');
@@ -536,15 +532,15 @@ function renderModel(m, p, plasma, f){
     r.querySelector('.bf').style.width = (m.V[i] / maxV * 100).toFixed(2) + '%';
     r.querySelector('.bv').textContent = fmtV(m.V[i]) + '×';
     r.classList.toggle('focus', i === f);
-    r.setAttribute('aria-label', `${T[i].l}${i === me ? ' (your type)' : ''}: ${fmtV(m.V[i])} times the average donor, ${ord(m.rank[i])} of 8. Show breakdown.`);
+    r.setAttribute('aria-label', `${T[i].l}: ${fmtV(m.V[i])} times the average donor, ${ord(m.rank[i])} of 8. ${i === f ? 'Clear highlight.' : 'Highlight.'}`);
   });
 
-  const d = T[f];
+  const d = T[b];
   document.getElementById('press-h').textContent = `Where ${d.l}’s score comes from`;
   document.getElementById('key-out').textContent = `Can’t receive from ${d.l}`;
   document.getElementById('press-calc').innerHTML = theta === 0
-    ? `Score = ΣP = <strong>${fmtV(m.V[f])}</strong>`
-    : `Score = ${(theta / 100).toFixed(2)} + ${(1 - theta / 100).toFixed(2)} × ${fmt3(m.S[f])} = <strong>${fmtV(m.V[f])}</strong>`;
+    ? `Score = ΣP = <strong>${fmtV(m.V[b])}</strong>`
+    : `Score = ${(theta / 100).toFixed(2)} + ${(1 - theta / 100).toFixed(2)} × ${fmt3(m.S[b])} = <strong>${fmtV(m.V[b])}</strong>`;
   const maxP = Math.max(...m.P) || 1;
   T.forEach((u, j) => {
     const r = pressRows[j], inn = ok(plasma, d, u);
@@ -609,15 +605,17 @@ function reason(plasma, d, r){
 
 function renderPanel(a, p, plasma, m){
   const place = region === 'World' ? 'World' : region;
+  const top = `<div class="p-top"><div class="p-eyebrow">${plasma ? 'Plasma' : 'Red cells'} · ${place}</div>${pin && a === pin ? '<button type="button" class="p-clear" data-clear>Clear</button>' : ''}</div>`;
+  if (!a){
+    P.innerHTML = `${top}<p class="p-empty">Tap a blood type to see who it can give to and get from, or a square for one pairing.</p>`;
+    return;
+  }
   if (a.t != null){
     const i = a.t, t = T[i], s = summary(plasma, i, p), tags = [];
     if (s.g.length === 8) tags.push('Universal donor');
     if (s.r.length === 8) tags.push('Universal recipient');
-    P.innerHTML = `<div class="p-eyebrow">${plasma ? 'Plasma' : 'Red cells'} · ${place}</div>
+    P.innerHTML = `${top}
       <div class="p-head"><span class="p-type">${t.l}</span><div><div class="p-pct">${fmt(p[i])}%</div><p class="p-sub">of people ${where(region)}, ${rankTxt(p, i)}</p></div></div>
-      <div class="mine">${i === me
-        ? `<span class="tag me-tag">Your type</span><button type="button" class="linkbtn" data-me="-1">Not mine</button>`
-        : `<button type="button" class="mine-btn" data-me="${i}">This is my type</button>`}</div>
       ${tags.length ? `<div class="tags">${tags.map(x => `<span class="tag">${x}</span>`).join('')}</div>` : ''}
       <p class="p-bio">${bio(t, plasma)}</p>
       <table class="p-table"><thead><tr><th scope="col">Gives ${plasma ? 'plasma' : 'red cells'} to</th><th scope="col">Gets them from</th></tr></thead>
@@ -629,7 +627,7 @@ function renderPanel(a, p, plasma, m){
     const share = i === j
       ? `${d.l} is ${fmt(p[i])}% of people ${where(region)}.`
       : `${d.l} donors are ${fmt(p[i])}% of people ${where(region)}; ${r.l} recipients are ${fmt(p[j])}%.`;
-    P.innerHTML = `<div class="p-eyebrow">${plasma ? 'Plasma' : 'Red cells'} · ${place}</div>
+    P.innerHTML = `${top}
       <div class="pair"><span class="p-type md">${d.l}</span><span class="arrow" aria-hidden="true">→</span><span class="p-type md">${r.l}</span></div>
       <div class="roles"><span>Donor to recipient</span></div>
       <div class="verdict"><span class="lg-tile ${k ? 'ok' : 'no'}">${k ? CHECK : CROSS}</span>${k ? 'Compatible' : 'Not compatible'}</div>
@@ -641,7 +639,7 @@ function renderPanel(a, p, plasma, m){
 
 function update(){
   const p = D.r[region], plasma = mode === 'plasma', a = hover || pin;
-  const hr = a.t != null ? a.t : a.d, hc = a.t != null ? a.t : a.r;
+  const hr = !a ? -1 : a.t != null ? a.t : a.d, hc = !a ? -1 : a.t != null ? a.t : a.r;
   const maxP = Math.max(50, ...p);
   const comp = plasma ? 'plasma' : 'red cells';
 
@@ -673,7 +671,7 @@ function update(){
       if (k){ reach += p[j]; pool[j] += p[i]; }
       if (c.dataset.s !== s){ c.dataset.s = s; c.classList.remove('ok', 'no'); c.classList.add(s); c.innerHTML = k ? CHECK : CROSS; }
       c.classList.toggle('hl', i === hr || j === hc);
-      c.classList.toggle('cur', a.t == null && i === a.d && j === a.r);
+      c.classList.toggle('cur', !!a && a.t == null && i === a.d && j === a.r);
       c.setAttribute('aria-label', `${t.l} ${comp} to ${u.l}: ${k ? 'compatible' : 'not compatible'}`);
     });
     reachC[i].querySelector('.num').textContent = fmt(reach) + '%';
@@ -685,14 +683,10 @@ function update(){
     e.querySelector('.fill').style.width = Math.min(100, pool[j]).toFixed(2) + '%';
     e.classList.toggle('hl', j === hc);
   });
-  colH.forEach((h, j) => { h.querySelector('.me').hidden = j !== me; });
-  document.getElementById('invite-hint').hidden = !picking();
-  M.classList.toggle('invite', picking());
-  rankRows.forEach((r, i) => { r.querySelector('.me').hidden = i !== me; });
-  M.classList.add('focusing');
+  M.classList.toggle('focusing', !!a);
   const m = model(p, plasma);
   renderPanel(a, p, plasma, m);
-  renderModel(m, p, plasma, a.t != null ? a.t : a.d);
+  renderModel(m, p, plasma, !a ? null : a.t != null ? a.t : a.d);
 }
 update();
 })();
