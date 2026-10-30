@@ -404,6 +404,7 @@ const CROSS = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4.5 4.5l7 7
 
 const where = r => r === 'World' ? 'worldwide' : 'in ' + (THE.has(r) ? 'the ' : '') + r;
 const fmt = v => v >= 99.95 ? '100' : v < 1 ? v.toFixed(2).replace(/0$/, '') : v.toFixed(1);
+const cap = s => s[0].toUpperCase() + s.slice(1);
 const joinAnd = a => a.length <= 1 ? a.join('') : a.slice(0, -1).join(', ') + ' and ' + a[a.length - 1];
 const antigens = t => ['A','B','D'].filter(x => t[x]);
 const antibodies = t => ['A','B'].filter(x => !t[x]).map(x => 'anti-' + x);
@@ -523,9 +524,11 @@ function renderModel(m, p, plasma, f){
   document.getElementById('theta-out').textContent = theta + '%';
 
   const topV = m.V[m.order[0]], tops = m.order.filter(i => Math.abs(m.V[i] - topV) < 1e-9);
+  // O− red cells and AB plasma reach every patient, so they top every population; ties share an ABO group (AB− and AB+ plasma)
+  const topName = tops.length > 1 && tops.every(i => T[i].abo === T[tops[0]].abo) ? T[tops[0]].abo : joinAnd(tops.map(i => T[i].l));
   const lead = theta === 100
     ? 'When every patient gets their own type, every donor carries the average load.'
-    : `<strong>${joinAnd(tops.map(i => T[i].l))}</strong> ${plasma ? 'plasma' : 'red-cell'} donations go furthest ${where(region)}: ${fmtV(topV)}× the average donor.`;
+    : `<strong>${topName}</strong> ${plasma ? 'plasma always goes' : 'red cells always go'} furthest, since anyone can receive ${plasma ? 'it' : 'them'}. ${cap(where(region))}, ${/^[AEIOU]/.test(topName) ? 'an' : 'a'} ${topName} donor carries ${fmtV(topV)}× the average load.`;
   const sel = pin && pin.t != null ? pin.t : null;
   const extra = theta === 100 || sel == null || tops.includes(sel) ? '' : ` ${T[sel].l}: ${fmtV(m.V[sel])}×, ${ord(m.rank[sel])} of 8.`;
   document.getElementById('model-result').innerHTML = lead + extra;
