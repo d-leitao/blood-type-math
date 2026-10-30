@@ -190,6 +190,22 @@ button.ch,button.rh,button.c{appearance:none;border:0;font:inherit;color:inherit
 
 .me{font-family:var(--font-data);font-size:9.5px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;line-height:1;color:var(--ink);border:1px solid var(--ink);border-radius:4px;padding:2px 4px}
 .tag.me-tag{background:var(--ink);color:var(--surface)}
+.mine{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px}
+.mine-btn{appearance:none;font:inherit;font-size:13px;font-weight:600;padding:5px 13px;border-radius:999px;border:1.5px dashed var(--ink-2);background:transparent;color:var(--ink);cursor:pointer}
+.mine-btn:hover{border-style:solid;background:var(--wash)}
+.mine-btn:focus-visible,.nudge button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.invite-hint{margin:0;padding:12px 16px 0;font-size:13px;color:var(--ink-2);display:flex;align-items:center;gap:8px;position:sticky;left:0}
+.invite-hint::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--accent);flex:none;animation:beat 1.6s ease-in-out infinite}
+@keyframes beat{50%{transform:scale(1.5);opacity:.55}}
+.matrix.invite .ch:not(.hl){animation:glow 2.2s ease-in-out .6s 2}
+@keyframes glow{50%{background:var(--wash)}}
+.nudge{position:fixed;z-index:20;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);display:flex;align-items:center;gap:10px;max-width:calc(100% - 32px);box-sizing:border-box;padding:8px 8px 8px 18px;border-radius:999px;background:var(--ink);color:var(--surface);box-shadow:0 10px 30px rgba(0,0,0,.28);font-size:14.5px;animation:rise .28s cubic-bezier(.2,.7,.2,1)}
+.nudge span{white-space:nowrap}
+.nudge strong{font-family:var(--font-display);font-weight:800;font-stretch:112%}
+.nudge .yes{appearance:none;border:0;font:inherit;font-weight:600;padding:8px 14px;border-radius:999px;background:var(--surface);color:var(--ink);cursor:pointer;white-space:nowrap}
+.nudge .no{appearance:none;border:0;font:inherit;font-size:18px;line-height:1;width:34px;height:34px;border-radius:50%;background:transparent;color:var(--surface);cursor:pointer;opacity:.75}
+.nudge .no:hover{opacity:1}
+@keyframes rise{from{transform:translate(-50%,16px);opacity:0}}
 .foot{font-size:13px;color:var(--muted)}
 .foot a{color:var(--ink-2);text-underline-offset:3px}
 .load-error{margin:0;padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink)}
@@ -249,7 +265,7 @@ button.bar-row:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
 .chart-key i.dash{width:0;height:14px;border-radius:0;background:none;border-left:1px dashed var(--ink-2)}
 @media (max-width:480px){.chart-axis,.bar-row{grid-template-columns:70px minmax(0,1fr) 74px;column-gap:8px}.page{gap:16px}}
 
-@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
 <body>
@@ -271,10 +287,6 @@ button.bar-row:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
         <label class="field-label" for="region">Population</label>
         <select id="region"></select>
       </div>
-      <div class="field">
-        <label class="field-label" for="mine">Your type</label>
-        <select id="mine"></select>
-      </div>
     </div>
   </div>
 
@@ -283,7 +295,7 @@ button.bar-row:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
     <ul class="legend" aria-label="Legend">
       <li><span class="lg-tile ok" id="lg-ok"></span>Compatible</li>
       <li><span class="lg-tile no" id="lg-no"></span>Not compatible</li>
-      <li><span class="pair-chips"><span class="chip on">A</span><span class="chip">B</span></span>Antigen present</li>
+      <li><span class="pair-chips"><span class="chip on">A</span><span class="chip">B</span><span class="chip on">D</span></span>Antigens A, B and D (D is the Rh: + or −)</li>
       <li class="plasma-only"><span class="pair-chips"><span class="chip sq">A</span><span class="chip sq on">B</span></span>Antibody in donor plasma</li>
       <li><span class="lg-bar"></span>Population share</li>
     </ul>
@@ -291,6 +303,7 @@ button.bar-row:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
 
   <div class="workspace">
     <div class="matrix-scroll">
+      <p class="invite-hint" id="invite-hint" hidden>Know your blood type? Tap it in the grid.</p>
       <div class="matrix" id="matrix"></div>
     </div>
     <aside class="panel" id="panel" aria-live="polite"></aside>
@@ -333,6 +346,12 @@ button.bar-row:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
       </div>
     </div>
   </section>
+
+  <div class="nudge" id="nudge" role="region" aria-label="Set your blood type" hidden>
+    <span aria-live="polite">Is <strong id="nudge-type">O−</strong> your type?</span>
+    <button type="button" class="yes" id="nudge-yes">Yes, it’s mine</button>
+    <button type="button" class="no" id="nudge-no" aria-label="Not now">×</button>
+  </div>
 
   <footer class="details" id="method">
     <section aria-labelledby="d-score">
@@ -417,16 +436,21 @@ sel.append(g1, g2);
 sel.value = region;
 sel.addEventListener('change', () => { region = sel.value; save('btc-region', region); update(); });
 
-const mineSel = document.getElementById('mine');
-mineSel.appendChild(new Option('Not set', '-1'));
-T.forEach((t, i) => mineSel.appendChild(new Option(t.l, String(i))));
-mineSel.value = String(me);
-mineSel.addEventListener('change', () => {
-  me = parseInt(mineSel.value, 10);
-  save('btc-me', String(me));
-  if (me >= 0) pin = {t: me};
-  hover = null; update();
-});
+/* your type: claimed from the grid, the ranking or the panel */
+const N = document.getElementById('nudge');
+let nudgeOff = load('btc-nudge', '') === 'off';
+function setMe(i){
+  me = i; save('btc-me', String(i));
+  if (i >= 0) pin = {t: i};
+  N.hidden = true; hover = null; update();
+}
+function offerMe(i){
+  if (me >= 0 || nudgeOff) return;
+  document.getElementById('nudge-type').textContent = T[i].l;
+  N.dataset.t = String(i); N.hidden = false;
+}
+document.getElementById('nudge-yes').addEventListener('click', () => setMe(+N.dataset.t));
+document.getElementById('nudge-no').addEventListener('click', () => { N.hidden = true; nudgeOff = true; save('btc-nudge', 'off'); });
 
 const thetaIn = document.getElementById('theta');
 thetaIn.value = String(theta);
@@ -471,7 +495,7 @@ M.addEventListener('pointerover', e => { if (e.pointerType !== 'mouse') return; 
 M.addEventListener('pointerleave', () => { if (hover) { hover = null; update(); } });
 M.addEventListener('focusin', e => { const t = targetOf(e); if (t && !same(t, hover)) { hover = t; update(); } });
 M.addEventListener('focusout', e => { if (!M.contains(e.relatedTarget)) { hover = null; update(); } });
-M.addEventListener('click', e => { const t = targetOf(e); if (t) { pin = t; hover = null; update(); } });
+M.addEventListener('click', e => { const t = targetOf(e); if (t) { pin = t; hover = null; update(); if (t.t != null) offerMe(t.t); } });
 
 /* panel */
 const P = document.getElementById('panel');
@@ -481,6 +505,7 @@ P.addEventListener('click', e => {
     document.getElementById('value').scrollIntoView({behavior: still ? 'auto' : 'smooth', block: 'start'});
     return;
   }
+  const claim = e.target.closest('[data-me]'); if (claim) { setMe(+claim.dataset.me); return; }
   const b = e.target.closest('[data-pin]'); if (b) { pin = {t: +b.dataset.pin}; hover = null; update(); }
 });
 
@@ -507,7 +532,7 @@ MR.addEventListener('pointerover', e => { if (e.pointerType !== 'mouse') return;
 MR.addEventListener('pointerleave', () => { if (hover) { hover = null; update(); } });
 MR.addEventListener('focusin', e => { const t = rankOf(e); if (t && !same(t, hover)) { hover = t; update(); } });
 MR.addEventListener('focusout', e => { if (!MR.contains(e.relatedTarget)) { hover = null; update(); } });
-MR.addEventListener('click', e => { const t = rankOf(e); if (t) { pin = t; hover = null; update(); } });
+MR.addEventListener('click', e => { const t = rankOf(e); if (t) { pin = t; hover = null; update(); offerMe(t.t); } });
 
 function renderModel(m, p, plasma, f){
   const comp = plasma ? 'plasma' : 'red cells';
@@ -517,7 +542,7 @@ function renderModel(m, p, plasma, f){
   const lead = theta === 100
     ? 'At 100% same-type, every donor carries the average load.'
     : `<strong>${joinAnd(tops.map(i => T[i].l))}</strong> ${plasma ? 'plasma' : 'red-cell'} donations go furthest ${where(region)}: ${fmtV(topV)}× the average donor.`;
-  const mine = theta === 100 || me < 0 || tops.includes(me) ? '' : ` Yours, ${T[me].l}: ${fmtV(m.V[me])}×, ${ord(m.rank[me])} of 8.`;
+  const mine = theta === 100 || tops.includes(me) ? '' : me < 0 ? ' Tap your type in the grid to compare.' : ` Yours, ${T[me].l}: ${fmtV(m.V[me])}×, ${ord(m.rank[me])} of 8.`;
   document.getElementById('model-result').innerHTML = lead + mine;
 
   const maxV = Math.max(...m.V) * 1.06 || 1, avg = 100 / maxV;
@@ -566,11 +591,14 @@ function rankTxt(p, i){
   if (n === 8) return 'rarest type';
   return n + (n === 2 ? 'nd' : n === 3 ? 'rd' : 'th') + ' most common of 8';
 }
-function bio(t){
+function bio(t, plasma){
   const ag = antigens(t), ab = antibodies(t);
-  const cells = ag.length ? `Red cells carry the ${joinAnd(ag)} antigen${ag.length > 1 ? 's' : ''}${t.D ? '' : ' and no D'}.` : 'Red cells carry no A, B or D antigens.';
-  const pl = ab.length ? `Plasma carries ${joinAnd(ab)}.` : 'Plasma carries neither anti-A nor anti-B.';
-  return cells + ' ' + pl;
+  const abo = ag.filter(x => x !== 'D');
+  const cells = 'Red cells carry ' + (abo.length ? `the ${joinAnd(abo)} antigen${abo.length > 1 ? 's' : ''}` : 'no A or B antigens') +
+    (t.D ? (abo.length ? ' and D, the Rh factor that makes it positive.' : ' but do carry D, the Rh factor that makes it positive.')
+         : (abo.length ? ' but no D, the Rh factor, so it’s negative.' : ' and no D, the Rh factor, so it’s negative.'));
+  const pl = (ab.length ? `Plasma carries ${joinAnd(ab)}.` : 'Plasma carries neither anti-A nor anti-B.') + ' Rh doesn’t matter for plasma.';
+  return plasma ? pl : cells;
 }
 function reason(plasma, d, r){
   if (!plasma){
@@ -600,18 +628,18 @@ function reason(plasma, d, r){
 function renderPanel(a, p, plasma, m){
   const place = region === 'World' ? 'World' : region;
   if (a.t != null){
-    const i = a.t, t = T[i], s1 = summary(false, i, p), s2 = summary(true, i, p), tags = [];
-    if (s1.g.length === 8) tags.push('Universal red-cell donor');
-    if (s1.r.length === 8) tags.push('Universal red-cell recipient');
-    if (s2.g.length === 8) tags.push('Universal plasma donor');
-    if (s2.r.length === 8) tags.push('Universal plasma recipient');
-    const row = (label, s, cur) => `<tr class="${cur ? 'cur' : ''}"><th scope="row">${label}</th><td><span class="v">${fmt(s.gp)}%</span><span class="ts">${listTxt(s.g)}</span></td><td><span class="v">${fmt(s.rp)}%</span><span class="ts">${listTxt(s.r)}</span></td></tr>`;
-    P.innerHTML = `<div class="p-eyebrow">Type profile · ${place}</div>
+    const i = a.t, t = T[i], s = summary(plasma, i, p), tags = [];
+    if (s.g.length === 8) tags.push('Universal donor');
+    if (s.r.length === 8) tags.push('Universal recipient');
+    P.innerHTML = `<div class="p-eyebrow">${plasma ? 'Plasma' : 'Red cells'} · ${place}</div>
       <div class="p-head"><span class="p-type">${t.l}</span><div><div class="p-pct">${fmt(p[i])}%</div><p class="p-sub">of people ${where(region)}, ${rankTxt(p, i)}</p></div></div>
-      ${tags.length || i === me ? `<div class="tags">${i === me ? '<span class="tag me-tag">Your type</span>' : ''}${tags.map(x => `<span class="tag">${x}</span>`).join('')}</div>` : ''}
-      <p class="p-bio">${bio(t)}</p>
-      <table class="p-table"><thead><tr><th scope="col"><span class="sr"></span></th><th scope="col">Gives to</th><th scope="col">Gets from</th></tr></thead>
-      <tbody>${row('Red cells', s1, !plasma)}${row('Plasma', s2, plasma)}</tbody></table>
+      <div class="mine">${i === me
+        ? `<span class="tag me-tag">Your type</span><button type="button" class="linkbtn" data-me="-1">Not mine</button>`
+        : `<button type="button" class="mine-btn" data-me="${i}">This is my type</button>`}</div>
+      ${tags.length ? `<div class="tags">${tags.map(x => `<span class="tag">${x}</span>`).join('')}</div>` : ''}
+      <p class="p-bio">${bio(t, plasma)}</p>
+      <table class="p-table"><thead><tr><th scope="col">Gives ${plasma ? 'plasma' : 'red cells'} to</th><th scope="col">Gets them from</th></tr></thead>
+      <tbody><tr><td><span class="v">${fmt(s.gp)}%</span><span class="ts">${listTxt(s.g)}</span></td><td><span class="v">${fmt(s.rp)}%</span><span class="ts">${listTxt(s.r)}</span></td></tr></tbody></table>
       <p class="p-value">Load per donor: <strong>${fmtV(m.V[i])}×</strong> average${theta === 100 ? '' : ', ' + ord(m.rank[i]) + ' of 8'}. <button type="button" class="linkbtn" data-jump>See model</button></p>
       <p class="hint">% = share of people on the other side. Tap a square for one pairing.</p>`;
   } else {
@@ -676,6 +704,8 @@ function update(){
     e.classList.toggle('hl', j === hc);
   });
   colH.forEach((h, j) => { h.querySelector('.me').hidden = j !== me; });
+  document.getElementById('invite-hint').hidden = me >= 0;
+  M.classList.toggle('invite', me < 0);
   rankRows.forEach((r, i) => { r.querySelector('.me').hidden = i !== me; });
   M.classList.add('focusing');
   const m = model(p, plasma);
