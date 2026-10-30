@@ -9,9 +9,9 @@ An interactive map of who can give blood to whom, with how common each type is i
 - **Compatibility grid.** Donors run down, recipients run across, for all eight ABO/RhD types. Switch between red cells and plasma; plasma rules run the other way, so AB plasma suits everyone.
 - **Prevalence.** Every type is labelled with its share of the population, for the world or any of 123 countries. The edges of the grid add up how many people each donor can reach and how large each recipient's donor pool is.
 - **Explanations.** Hover or tap a square to see why a pairing works or fails, or a type to see its profile.
-- **Which donations go furthest.** A model of how much patient need each donor type carries, with a slider for how strictly hospitals match same-type blood. Explained below.
+- **Which donations are most needed.** A model of demand for each donor type's blood against its supply, with sliders for how strictly hospitals match same-type blood and how much goes to emergencies. Explained below.
 
-## Which donations go furthest
+## Which donations are most needed
 
 A donation goes further when it can reach patients who have few other donors to rely on. Counting how many people a type can give to overrates common pairings: A+ patients can already take red cells from most of the population, so one more donor for them adds little. The model weighs each patient group by how hard it is to supply.
 
@@ -26,7 +26,7 @@ score[i]    = (1 − e) · matched[i] + e / u     for universal donors
 score[i]    = (1 − e) · matched[i]             for everyone else
 ```
 
-The part of each group's need not met with same-type blood, `1 − θ`, is split evenly across everyone who can donate to that group. Universal donors (O− for red cells, AB− and AB+ for plasma) can give to anyone, so they also take emergency use, when blood is needed before the patient's type is known. `u` is their share of the population, and `e = f·u·M / (1 − f + f·u·M)` is the share of all blood used in emergencies, where `M` is their `matched` load. That makes emergencies exactly `f` of the universal donors' load. The population-weighted average score is exactly 1 for any `θ` and `f`, so 2.0 means twice the load of the average donor.
+The part of each group's need not met with same-type blood, `1 − θ`, is split evenly across everyone who can donate to that group. Universal donors (O− for red cells, AB− and AB+ for plasma) can give to anyone, so they also take emergency use, when blood is needed before the patient's type is known. `u` is their share of the population, and `e = f·u·M / (1 − f + f·u·M)` is the share of all blood used in emergencies, where `M` is their `matched` load. That makes emergencies exactly `f` of the universal donors' load. The score is demand for a type's blood ÷ its supply, assuming every type donates at the same rate. Total demand equals total supply, so the population-weighted average is exactly 1 for any `θ` and `f`. Above 1 a type runs short: at 1.68 (O− red cells in Portugal), patients need 1.68 O− units for every unit O− donors give. Below 1 some of it isn't needed: at 0.79, about a fifth of AB+ red cells would have no patient. Blood services close these gaps by recruiting more of the short types and asking AB donors to give plasma instead, where AB is the most needed type.
 
 Emergency use is set as a share of the universal donors' blood rather than of all blood. A fixed share of all blood would explode where they're rare: 2% of all red cells going to O− in Bhutan, where O− is 0.06% of people, would score O− donors at about 35×.
 

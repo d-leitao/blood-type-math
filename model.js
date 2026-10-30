@@ -23,7 +23,7 @@ export function compatible(component, donor, recipient) {
 }
 
 /**
- * Which donations go furthest.
+ * Which donations are most needed.
  *
  * p[i] is the share of people with type i, standing in for both donors and patients.
  * sameType (θ, 0..1) is the share of each typed patient group's need met with same-type blood.
@@ -45,9 +45,10 @@ export function compatible(component, donor, recipient) {
  * blood would put about 35 times the average load on O− donors in Bhutan.
  *
  * The part of each group's need not met with same-type blood (1 − θ) is split evenly
- * across everyone who can give to that group; value is the load that lands on one donor.
- * Its population-weighted mean is exactly 1 for any θ and f, so 2 means twice the load of
- * the average donor. θ = 0 is fully flexible matching; θ = 1 with f = 0 gives every type 1.
+ * across everyone who can give to that group. value is demand for a type's blood ÷ its supply,
+ * if every type donates at the same rate. Total demand equals total supply, so its
+ * population-weighted mean is exactly 1 for any θ and f: above 1 a type runs short, below 1
+ * some of it isn't needed. θ = 0 is fully flexible matching; θ = 1 with f = 0 gives every type 1.
  */
 export function scoreTypes(p, component = 'red', sameType = 0, emergency = 0) {
   if (!(sameType >= 0 && sameType <= 1)) throw new RangeError('sameType must be between 0 and 1');
