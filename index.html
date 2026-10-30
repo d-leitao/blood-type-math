@@ -434,9 +434,10 @@ let mode = load('btc-mode', 'red'); if (mode !== 'red' && mode !== 'plasma') mod
 let region = load('btc-region', 'World'); if (!D.r[region]) region = 'World';
 let saved = parseInt(load('btc-sel', load('btc-me', '0')), 10);  // first visit: O− is selected
 let pin = saved >= 0 && saved < 8 ? {t: saved} : null;  // the highlight: a type {t}, a pairing {d, r}, or nothing
-let theta = 80;  // sliders are what-ifs, so they always open at the best estimates
+let theta = parseInt(load('btc-theta', '80'), 10); if (!(theta >= 0 && theta <= 100)) theta = 80;
 const EST = {red: 16, plasma: 70}, EMAX = 90;  // estimated emergency share of universal donors' blood, per component
-const emerg = {...EST};
+const emerg = {};
+for (const k of ['red', 'plasma']) { const v = parseInt(load('btc-emerg-' + k, String(EST[k])), 10); emerg[k] = v >= 0 && v <= EMAX ? v : EST[k]; }
 
 document.getElementById('lg-ok').innerHTML = CHECK;
 document.getElementById('lg-no').innerHTML = CROSS;
@@ -491,9 +492,9 @@ document.getElementById('clear-sel').addEventListener('click', () => setPin(null
 const thetaIn = document.getElementById('theta');
 thetaIn.value = String(theta);
 thetaIn.style.setProperty('--fill', theta + '%');
-thetaIn.addEventListener('input', () => { theta = parseInt(thetaIn.value, 10); thetaIn.style.setProperty('--fill', theta + '%'); update(); });
+thetaIn.addEventListener('input', () => { theta = parseInt(thetaIn.value, 10); thetaIn.style.setProperty('--fill', theta + '%'); save('btc-theta', String(theta)); update(); });
 const emIn = document.getElementById('emerg');
-emIn.addEventListener('input', () => { emerg[mode] = parseInt(emIn.value, 10); update(); });
+emIn.addEventListener('input', () => { emerg[mode] = parseInt(emIn.value, 10); save('btc-emerg-' + mode, String(emerg[mode])); update(); });
 
 document.querySelectorAll('.seg button').forEach(b => b.addEventListener('click', () => {
   mode = b.dataset.mode; save('btc-mode', mode); update();
