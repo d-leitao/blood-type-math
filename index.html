@@ -56,7 +56,7 @@ h1{font-family:var(--font-display);font-weight:850;font-stretch:118%;font-size:c
 .lede{max-width:46ch;color:var(--ink-2);margin:0;font-size:16px}
 .top{display:grid;gap:16px 32px;align-items:end;grid-template-columns:minmax(0,1fr)}
 @media (min-width:960px){.top{grid-template-columns:minmax(0,1fr) auto}}
-.strip{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 28px}
+.strip{grid-area:strip;display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-start;gap:8px 28px}
 
 .controls{display:flex;flex-wrap:wrap;gap:12px 16px;align-items:end}
 .field{display:grid;gap:6px;min-width:0}
@@ -80,10 +80,11 @@ select{font:inherit;font-size:14.5px;box-sizing:border-box;height:42px;padding:0
 .plasma-only{display:none!important}
 .is-plasma .plasma-only{display:flex!important}
 
-.workspace{display:grid;gap:20px;align-items:start;grid-template-columns:minmax(0,1fr)}
-@media (min-width:1100px){.workspace{grid-template-columns:minmax(0,1fr) 330px}}
+.workspace{display:grid;gap:12px 20px;align-items:start;grid-template-columns:minmax(0,1fr);grid-template-areas:"strip" "matrix" "panel"}
+@media (min-width:1100px){.workspace{grid-template-columns:minmax(0,1fr) 330px;grid-template-areas:"strip ." "matrix panel"}}
+.panel{grid-area:panel}
 
-.matrix-scroll{overflow-x:auto;min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:16px}
+.matrix-scroll{grid-area:matrix;overflow-x:auto;min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:16px}
 .matrix{--rh:176px;--rc:108px;--cw:46px;display:grid;grid-template-columns:var(--rh) repeat(8,minmax(var(--cw),1fr)) var(--rc);grid-template-rows:auto repeat(8,46px) auto;gap:4px;padding:16px 16px 14px 0;min-width:720px}
 
 button.ch,button.rh,button.c{appearance:none;border:0;font:inherit;color:inherit;cursor:pointer;margin:0}
@@ -188,17 +189,22 @@ button.ch,button.rh,button.c{appearance:none;border:0;font:inherit;color:inherit
 .details a{color:var(--ink);text-underline-offset:3px}
 .details code{font-family:var(--font-data);font-size:12.5px;color:var(--ink);white-space:normal}
 
-.invite-hint{margin:0;padding:12px 16px 0;font-size:13px;color:var(--ink-2);display:flex;align-items:center;gap:8px;position:sticky;left:0}
+.m-top{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:30px;padding:10px 12px 0 16px;position:sticky;left:0}
+.invite-hint{margin:0;font-size:13px;color:var(--ink-2);display:flex;align-items:center;gap:8px;min-width:0}
 .invite-hint::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--accent);flex:none;animation:beat 1.6s ease-in-out infinite}
 @keyframes beat{50%{transform:scale(1.5);opacity:.55}}
 .foot{font-size:13px;color:var(--muted)}
 .foot a{color:var(--ink-2);text-underline-offset:3px}
 .load-error{margin:0;padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink)}
 .p-value{margin:0;font-size:13.5px;color:var(--ink-2)}
-.p-top{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
-.p-clear{appearance:none;border:1px solid var(--line);background:transparent;color:var(--ink-2);font:inherit;font-size:12.5px;padding:3px 10px;border-radius:999px;cursor:pointer}
-.p-clear:hover{color:var(--ink);border-color:var(--ink-2)}
-.p-clear:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.m-clear{flex:none;appearance:none;border:1px solid var(--line);background:transparent;color:var(--ink-2);font:inherit;font-size:12.5px;padding:3px 10px;border-radius:999px;cursor:pointer}
+.m-clear:hover{color:var(--ink);border-color:var(--ink-2)}
+@media (hover:hover){
+  .ch:not(.hl):hover,.rh:not(.hl):hover,button.bar-row:not(.focus):hover{background:var(--empty)}
+  .c:hover{box-shadow:0 0 0 2px var(--surface),0 0 0 3.5px var(--ink-2);position:relative;z-index:1}
+  .matrix.focusing .c:not(.hl):hover{opacity:1}
+}
+.m-clear:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
 .p-empty{margin:0;font-size:15px;color:var(--ink-2)}
 .p-value strong{font-family:var(--font-data);font-weight:500;color:var(--ink);font-variant-numeric:tabular-nums}
 
@@ -287,20 +293,22 @@ button.bar-row:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
     </div>
   </div>
 
-  <div class="strip">
-    <p class="mode-note" id="mode-note"></p>
-    <ul class="legend" aria-label="Legend">
-      <li><span class="lg-tile ok" id="lg-ok"></span>Compatible</li>
-      <li><span class="lg-tile no" id="lg-no"></span>Not compatible</li>
-      <li><span class="pair-chips"><span class="chip on">A</span><span class="chip">B</span><span class="chip on">D</span></span>Antigen present</li>
-      <li class="plasma-only"><span class="pair-chips"><span class="chip sq">A</span><span class="chip sq on">B</span></span>Antibody in donor plasma</li>
-      <li><span class="lg-bar"></span>Population share</li>
-    </ul>
-  </div>
-
   <div class="workspace">
+    <div class="strip">
+      <p class="mode-note" id="mode-note"></p>
+      <ul class="legend" aria-label="Legend">
+        <li><span class="lg-tile ok" id="lg-ok"></span>Compatible</li>
+        <li><span class="lg-tile no" id="lg-no"></span>Not compatible</li>
+        <li><span class="pair-chips"><span class="chip on">A</span><span class="chip">B</span><span class="chip on">D</span></span>Antigen present</li>
+        <li class="plasma-only"><span class="pair-chips"><span class="chip sq">A</span><span class="chip sq on">B</span></span>Antibody in donor plasma</li>
+        <li><span class="lg-bar"></span>Population share</li>
+      </ul>
+    </div>
     <div class="matrix-scroll">
-      <p class="invite-hint">Tap your blood type in the grid. Tap again to clear.</p>
+      <div class="m-top">
+        <p class="invite-hint">Tap your blood type in the grid. Tap again to clear.</p>
+        <button type="button" class="m-clear" id="clear-sel" hidden>Clear</button>
+      </div>
       <div class="matrix" id="matrix"></div>
     </div>
     <aside class="panel" id="panel" aria-live="polite"></aside>
@@ -353,14 +361,14 @@ button.bar-row:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
     <section aria-labelledby="d-theta">
       <h2 id="d-theta">Own-type matching</h2>
       <p id="theta-help">The share of each group’s need met with the patient’s own type; the rest is shared across compatible donors. 0% is fully flexible, 100% gives every type exactly 1.0.</p>
-      <p>The estimate of about 70% reproduces England’s O− figures: 7.8% of hospital patients, 13% of red-cell stock, and 41% of O− units given to patients who aren’t O− (<a href="https://nhsbtdbe.blob.core.windows.net/umbraco-assets-corp/17159/o-neg-survey-2018-final2.pdf" target="_blank" rel="noopener">NHSBT 2018 audit</a>). No comparable data exists here for other countries or for plasma.</p>
+      <p>The estimate of about 70% matches national O− figures: England (7.8% of patients, 13% of red-cell stock; <a href="https://nhsbtdbe.blob.core.windows.net/umbraco-assets-corp/17159/o-neg-survey-2018-final2.pdf" target="_blank" rel="noopener">NHSBT 2018 audit</a>), Australia (9% of people, over 15% of demand; <a href="https://www.lifeblood.com.au/news-and-stories/trending-research/better-management-o-negative-blood-supply" target="_blank" rel="noopener">Lifeblood</a>) and the US (6.8% of donors, 12.1% of transfusions in 2023; <a href="https://www.aabb.org/docs/default-source/default-document-library/resources/association-bulletins/ab19-02.pdf" target="_blank" rel="noopener">AABB</a>) all imply 64–71%. A 2024 audit in Victoria, Australia implies about 35% (<a href="https://www.health.vic.gov.au/sites/default/files/2025-07/o-rhd-negative-rbc-audit-report-june-25.pdf" target="_blank" rel="noopener">Blood Matters</a>). No published figures were found for Portugal.</p>
     </section>
     <section aria-labelledby="d-assume">
       <h2 id="d-assume">Assumptions</h2>
       <ul>
         <li>Patients and donors are spread like the population and everyone donates equally. Real patients skew older, and donor pools differ.</li>
         <li>The shared part is spread evenly. In reality it’s mostly O− (emergencies, expiring units, special requirements), so only O−’s score is anchored to data.</li>
-        <li>Much plasma becomes medicines, where type doesn’t matter. The plasma view covers transfusion plasma only.</li>
+        <li>Much plasma becomes medicines, where type doesn’t matter, so the plasma view covers transfusion plasma only. It also understates AB: Canada issues 14% of its plasma as AB, from about 3% of people, more than even fully flexible matching predicts (<a href="https://www.blood.ca/sites/default/files/2018-AB%20Plasma-Overview.pdf" target="_blank" rel="noopener">Canadian Blood Services</a>).</li>
         <li>ABO and RhD only. Hospitals still crossmatch every unit, and other antigen systems matter for some patients.</li>
       </ul>
     </section>
@@ -406,10 +414,9 @@ function save(k, v){ try { localStorage.setItem(k, v); } catch(e){} }
 
 let mode = load('btc-mode', 'red'); if (mode !== 'red' && mode !== 'plasma') mode = 'red';
 let region = load('btc-region', 'World'); if (!D.r[region]) region = 'World';
-let saved = parseInt(load('btc-sel', load('btc-me', '-1')), 10);
+let saved = parseInt(load('btc-sel', load('btc-me', '0')), 10);  // first visit: O− is selected
 let pin = saved >= 0 && saved < 8 ? {t: saved} : null;  // the highlight: a type {t}, a pairing {d, r}, or nothing
 let theta = parseInt(load('btc-theta', '70'), 10); if (!(theta >= 0 && theta <= 100)) theta = 70;
-let hover = null;
 
 document.getElementById('lg-ok').innerHTML = CHECK;
 document.getElementById('lg-no').innerHTML = CROSS;
@@ -429,11 +436,12 @@ sel.addEventListener('change', () => { region = sel.value; save('btc-region', re
 
 /* your type: claimed from the grid, the ranking or the panel */
 function setPin(t){
-  pin = t; hover = null;
+  pin = t;
   save('btc-sel', pin && pin.t != null ? String(pin.t) : '-1');
   update();
 }
 const toggle = t => setPin(same(t, pin) ? null : t);
+document.getElementById('clear-sel').addEventListener('click', () => setPin(null));
 
 const thetaIn = document.getElementById('theta');
 thetaIn.value = String(theta);
@@ -475,10 +483,6 @@ const targetOf = e => {
   return b.classList.contains('c') ? {d: +b.dataset.d, r: +b.dataset.r} : {t: +b.dataset.t};
 };
 const same = (a, b) => !!(a && b && a.t === b.t && a.d === b.d && a.r === b.r);
-M.addEventListener('pointerover', e => { if (e.pointerType !== 'mouse') return; const t = targetOf(e); if (t && !same(t, hover)) { hover = t; update(); } });
-M.addEventListener('pointerleave', () => { if (hover) { hover = null; update(); } });
-M.addEventListener('focusin', e => { const t = targetOf(e); if (t && !same(t, hover)) { hover = t; update(); } });
-M.addEventListener('focusout', e => { if (hover && !M.contains(e.relatedTarget)) { hover = null; update(); } });
 M.addEventListener('click', e => { const t = targetOf(e); if (t) toggle(t); });
 
 /* panel */
@@ -489,7 +493,6 @@ P.addEventListener('click', e => {
     document.getElementById('value').scrollIntoView({behavior: still ? 'auto' : 'smooth', block: 'start'});
     return;
   }
-  if (e.target.closest('[data-clear]')) { setPin(null); return; }
   const b = e.target.closest('[data-pin]'); if (b) setPin({t: +b.dataset.pin});
 });
 
@@ -512,10 +515,6 @@ const pressRows = T.map(t => {
   MP.appendChild(r); return r;
 });
 const rankOf = e => { const b = e.target.closest('.bar-row'); return b && MR.contains(b) ? {t: +b.dataset.t} : null; };
-MR.addEventListener('pointerover', e => { if (e.pointerType !== 'mouse') return; const t = rankOf(e); if (t && !same(t, hover)) { hover = t; update(); } });
-MR.addEventListener('pointerleave', () => { if (hover) { hover = null; update(); } });
-MR.addEventListener('focusin', e => { const t = rankOf(e); if (t && !same(t, hover)) { hover = t; update(); } });
-MR.addEventListener('focusout', e => { if (hover && !MR.contains(e.relatedTarget)) { hover = null; update(); } });
 MR.addEventListener('click', e => { const t = rankOf(e); if (t) toggle(t); });
 
 function renderModel(m, p, plasma, f){
@@ -613,7 +612,7 @@ function reason(plasma, d, r){
 
 function renderPanel(a, p, plasma, m){
   const place = region === 'World' ? 'World' : region;
-  const top = `<div class="p-top"><div class="p-eyebrow">${plasma ? 'Plasma' : 'Red cells'} · ${place}</div>${pin && a === pin ? '<button type="button" class="p-clear" data-clear>Clear</button>' : ''}</div>`;
+  const top = `<div class="p-eyebrow">${plasma ? 'Plasma' : 'Red cells'} · ${place}</div>`;
   if (!a){
     P.innerHTML = `${top}<p class="p-empty">Tap a blood type to see who it can give to and get from, or a square for one pairing.</p>`;
     return;
@@ -646,7 +645,7 @@ function renderPanel(a, p, plasma, m){
 }
 
 function update(){
-  const p = D.r[region], plasma = mode === 'plasma', a = hover || pin;
+  const p = D.r[region], plasma = mode === 'plasma', a = pin;
   const hr = !a ? -1 : a.t != null ? a.t : a.d, hc = !a ? -1 : a.t != null ? a.t : a.r;
   const maxP = Math.max(50, ...p);
   const comp = plasma ? 'plasma' : 'red cells';
@@ -681,6 +680,7 @@ function update(){
       c.classList.toggle('hl', i === hr || j === hc);
       c.classList.toggle('cur', !!a && a.t == null && i === a.d && j === a.r);
       c.setAttribute('aria-label', `${t.l} ${comp} to ${u.l}: ${k ? 'compatible' : 'not compatible'}`);
+      c.title = `${t.l} ${comp} → ${u.l}: ${k ? 'compatible' : 'not compatible'}`;
     });
     reachC[i].querySelector('.num').textContent = fmt(reach) + '%';
     reachC[i].querySelector('.fill').style.width = Math.min(100, reach).toFixed(2) + '%';
@@ -692,6 +692,7 @@ function update(){
     e.classList.toggle('hl', j === hc);
   });
   M.classList.toggle('focusing', !!a);
+  document.getElementById('clear-sel').hidden = !pin;
   const m = model(p, plasma);
   renderPanel(a, p, plasma, m);
   renderModel(m, p, plasma, !a ? null : a.t != null ? a.t : a.d);
