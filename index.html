@@ -210,14 +210,21 @@ button.ch,button.rh,button.c{appearance:none;border:0;font:inherit;color:inherit
 .model-result{margin:0;font-size:17px;text-wrap:pretty}
 .model-result strong{font-family:var(--font-display);font-weight:800;font-stretch:112%}
 .theta{display:grid;gap:6px;padding:0 6px;min-width:0}
-.theta-head{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px 16px}
+.theta-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.theta-head label{flex:1;min-width:0}
+.theta-head output{flex:none}
 .theta-head label{font-weight:500;font-size:13.5px;color:var(--ink-2)}
 .theta-head output{font-family:var(--font-data);font-size:14px;font-variant-numeric:tabular-nums}
-.theta-track{position:relative;padding-top:20px}
-.theta-mark{position:absolute;top:0;left:var(--at);transform:translateX(-50%);font-family:var(--font-data);font-size:11px;color:var(--muted);white-space:nowrap}
-.theta-mark::after{content:"";position:absolute;left:50%;top:15px;height:6px;border-left:1px solid var(--muted)}
-.theta input[type=range]{display:block;width:100%;margin:0;accent-color:var(--ink);cursor:pointer}
-.theta input[type=range]:focus-visible{outline:2px solid var(--ink);outline-offset:4px}
+.theta-track{position:relative;padding-top:16px}
+.theta-mark{position:absolute;top:0;left:var(--at);transform:translateX(-50%);font-family:var(--font-data);font-size:10.5px;color:var(--muted);white-space:nowrap}
+.theta-mark::after{content:"";position:absolute;left:50%;top:13px;height:5px;border-left:1px solid var(--muted)}
+.theta input[type=range]{-webkit-appearance:none;appearance:none;display:block;width:100%;height:18px;margin:0;background:transparent;cursor:pointer;--fill:70%}
+.theta input[type=range]::-webkit-slider-runnable-track{height:4px;border-radius:2px;background:linear-gradient(to right,var(--ink) var(--fill),var(--track) var(--fill))}
+.theta input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:14px;height:14px;margin-top:-5px;border-radius:50%;background:var(--ink);border:2px solid var(--surface);box-shadow:0 0 0 1px var(--ink)}
+.theta input[type=range]::-moz-range-track{height:4px;border-radius:2px;background:var(--track)}
+.theta input[type=range]::-moz-range-progress{height:4px;border-radius:2px;background:var(--ink)}
+.theta input[type=range]::-moz-range-thumb{width:10px;height:10px;border-radius:50%;background:var(--ink);border:2px solid var(--surface);box-shadow:0 0 0 1px var(--ink)}
+.theta input[type=range]:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:4px}
 .theta-scale{display:flex;justify-content:space-between;gap:8px;font-size:11.5px;color:var(--muted)}
 .calc{margin:0;padding:4px 6px 0;font-family:var(--font-data);font-size:13px;color:var(--ink-2);font-variant-numeric:tabular-nums}
 .calc strong{color:var(--ink);font-weight:500}
@@ -313,14 +320,14 @@ button.bar-row:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
         </div>
         <div class="theta">
           <div class="theta-head">
-            <label for="theta">Same-type first</label>
+            <label for="theta">Patients given their own type</label>
             <output id="theta-out" for="theta">70%</output>
           </div>
           <div class="theta-track">
-            <span class="theta-mark" style="--at:70%" aria-hidden="true">England ≈ 70%</span>
+            <span class="theta-mark" style="--at:70%" aria-hidden="true">Estimated</span>
             <input type="range" id="theta" min="0" max="100" step="5" value="70" aria-describedby="theta-help">
           </div>
-          <div class="theta-scale" aria-hidden="true"><span>Any compatible</span><span>Own type only</span></div>
+          <div class="theta-scale" aria-hidden="true"><span>Any compatible type</span><span>Always own type</span></div>
         </div>
         <div class="chart-axis" id="rank-axis"><span></span><span class="ax"><span>Average</span></span><span></span></div>
         <div class="bars" id="m-rank"></div>
@@ -341,12 +348,12 @@ button.bar-row:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
     <section aria-labelledby="d-score">
       <h2 id="d-score">How the score works</h2>
       <p>Pressure on a patient group is <code>P = patients ÷ people who can donate to them</code>. At 1.0 every compatible donor is needed for that group alone.</p>
-      <p>A donor’s score is <code>θ + (1 − θ) × ΣP</code> over the groups it can give to, where <code>θ</code> is the same-type share. Scores average exactly 1.0 across the population, so 2.0 means twice the average donor’s load. Counting reach alone would overrate common pairings: A+ patients can already take blood from most people.</p>
+      <p>A donor’s score is <code>θ + (1 − θ) × ΣP</code> over the groups it can give to, where <code>θ</code> is the share of patients given their own type. Scores average exactly 1.0 across the population, so 2.0 means twice the average donor’s load. Counting reach alone would overrate common pairings: A+ patients can already take blood from most people.</p>
     </section>
     <section aria-labelledby="d-theta">
-      <h2 id="d-theta">Same-type first</h2>
+      <h2 id="d-theta">Own-type matching</h2>
       <p id="theta-help">The share of each group’s need met with the patient’s own type; the rest is shared across compatible donors. 0% is fully flexible, 100% gives every type exactly 1.0.</p>
-      <p>About 70% reproduces England’s O− figures: 7.8% of hospital patients, 13% of red-cell stock, and 41% of O− units given to patients who aren’t O− (<a href="https://nhsbtdbe.blob.core.windows.net/umbraco-assets-corp/17159/o-neg-survey-2018-final2.pdf" target="_blank" rel="noopener">NHSBT 2018 audit</a>). No comparable data exists here for other countries or for plasma.</p>
+      <p>The estimate of about 70% reproduces England’s O− figures: 7.8% of hospital patients, 13% of red-cell stock, and 41% of O− units given to patients who aren’t O− (<a href="https://nhsbtdbe.blob.core.windows.net/umbraco-assets-corp/17159/o-neg-survey-2018-final2.pdf" target="_blank" rel="noopener">NHSBT 2018 audit</a>). No comparable data exists here for other countries or for plasma.</p>
     </section>
     <section aria-labelledby="d-assume">
       <h2 id="d-assume">Assumptions</h2>
@@ -430,7 +437,8 @@ const toggle = t => setPin(same(t, pin) ? null : t);
 
 const thetaIn = document.getElementById('theta');
 thetaIn.value = String(theta);
-thetaIn.addEventListener('input', () => { theta = parseInt(thetaIn.value, 10); save('btc-theta', String(theta)); update(); });
+thetaIn.style.setProperty('--fill', theta + '%');
+thetaIn.addEventListener('input', () => { theta = parseInt(thetaIn.value, 10); thetaIn.style.setProperty('--fill', theta + '%'); save('btc-theta', String(theta)); update(); });
 
 document.querySelectorAll('.seg button').forEach(b => b.addEventListener('click', () => {
   mode = b.dataset.mode; save('btc-mode', mode); update();
@@ -517,7 +525,7 @@ function renderModel(m, p, plasma, f){
 
   const topV = m.V[m.order[0]], tops = m.order.filter(i => Math.abs(m.V[i] - topV) < 1e-9);
   const lead = theta === 100
-    ? 'At 100% same-type, every donor carries the average load.'
+    ? 'When every patient gets their own type, every donor carries the average load.'
     : `<strong>${joinAnd(tops.map(i => T[i].l))}</strong> ${plasma ? 'plasma' : 'red-cell'} donations go furthest ${where(region)}: ${fmtV(topV)}× the average donor.`;
   const sel = pin && pin.t != null ? pin.t : null;
   const extra = theta === 100 || sel == null || tops.includes(sel) ? '' : ` ${T[sel].l}: ${fmtV(m.V[sel])}×, ${ord(m.rank[sel])} of 8.`;
