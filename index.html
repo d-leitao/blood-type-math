@@ -193,19 +193,13 @@ button.ch,button.rh,button.c{appearance:none;border:0;font:inherit;color:inherit
 .mine{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px}
 .mine-btn{appearance:none;font:inherit;font-size:13px;font-weight:600;padding:5px 13px;border-radius:999px;border:1.5px dashed var(--ink-2);background:transparent;color:var(--ink);cursor:pointer}
 .mine-btn:hover{border-style:solid;background:var(--wash)}
-.mine-btn:focus-visible,.nudge button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.invite-hint{margin:0;padding:12px 16px 0;font-size:13px;color:var(--ink-2);display:flex;align-items:center;gap:8px;position:sticky;left:0}
+.mine-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.invite-hint{margin:0;padding:12px 16px 0;font-size:13px;color:var(--ink-2);display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;position:sticky;left:0}
+.invite-hint .linkbtn{font-size:13px;color:var(--ink-2)}
 .invite-hint::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--accent);flex:none;animation:beat 1.6s ease-in-out infinite}
 @keyframes beat{50%{transform:scale(1.5);opacity:.55}}
 .matrix.invite .ch:not(.hl){animation:glow 2.2s ease-in-out .6s 2}
 @keyframes glow{50%{background:var(--wash)}}
-.nudge{position:fixed;z-index:20;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);display:flex;align-items:center;gap:10px;max-width:calc(100% - 32px);box-sizing:border-box;padding:8px 8px 8px 18px;border-radius:999px;background:var(--ink);color:var(--surface);box-shadow:0 10px 30px rgba(0,0,0,.28);font-size:14.5px;animation:rise .28s cubic-bezier(.2,.7,.2,1)}
-.nudge span{white-space:nowrap}
-.nudge strong{font-family:var(--font-display);font-weight:800;font-stretch:112%}
-.nudge .yes{appearance:none;border:0;font:inherit;font-weight:600;padding:8px 14px;border-radius:999px;background:var(--surface);color:var(--ink);cursor:pointer;white-space:nowrap}
-.nudge .no{appearance:none;border:0;font:inherit;font-size:18px;line-height:1;width:34px;height:34px;border-radius:50%;background:transparent;color:var(--surface);cursor:pointer;opacity:.75}
-.nudge .no:hover{opacity:1}
-@keyframes rise{from{transform:translate(-50%,16px);opacity:0}}
 .foot{font-size:13px;color:var(--muted)}
 .foot a{color:var(--ink-2);text-underline-offset:3px}
 .load-error{margin:0;padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink)}
@@ -295,7 +289,7 @@ button.bar-row:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
     <ul class="legend" aria-label="Legend">
       <li><span class="lg-tile ok" id="lg-ok"></span>Compatible</li>
       <li><span class="lg-tile no" id="lg-no"></span>Not compatible</li>
-      <li><span class="pair-chips"><span class="chip on">A</span><span class="chip">B</span><span class="chip on">D</span></span>Antigens A, B and D (D is the Rh: + or −)</li>
+      <li><span class="pair-chips"><span class="chip on">A</span><span class="chip">B</span><span class="chip on">D</span></span>Antigen present</li>
       <li class="plasma-only"><span class="pair-chips"><span class="chip sq">A</span><span class="chip sq on">B</span></span>Antibody in donor plasma</li>
       <li><span class="lg-bar"></span>Population share</li>
     </ul>
@@ -303,7 +297,7 @@ button.bar-row:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
 
   <div class="workspace">
     <div class="matrix-scroll">
-      <p class="invite-hint" id="invite-hint" hidden>Know your blood type? Tap it in the grid.</p>
+      <p class="invite-hint" id="invite-hint" hidden>Tap your blood type in the grid. <button type="button" class="linkbtn" id="skip-pick">I don’t know it</button></p>
       <div class="matrix" id="matrix"></div>
     </div>
     <aside class="panel" id="panel" aria-live="polite"></aside>
@@ -346,12 +340,6 @@ button.bar-row:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
       </div>
     </div>
   </section>
-
-  <div class="nudge" id="nudge" role="region" aria-label="Set your blood type" hidden>
-    <span aria-live="polite">Is <strong id="nudge-type">O−</strong> your type?</span>
-    <button type="button" class="yes" id="nudge-yes">Yes, it’s mine</button>
-    <button type="button" class="no" id="nudge-no" aria-label="Not now">×</button>
-  </div>
 
   <footer class="details" id="method">
     <section aria-labelledby="d-score">
@@ -437,20 +425,14 @@ sel.value = region;
 sel.addEventListener('change', () => { region = sel.value; save('btc-region', region); update(); });
 
 /* your type: claimed from the grid, the ranking or the panel */
-const N = document.getElementById('nudge');
-let nudgeOff = load('btc-nudge', '') === 'off';
+let skipPick = load('btc-skip', '') === 'on';
+const picking = () => me < 0 && !skipPick;
 function setMe(i){
   me = i; save('btc-me', String(i));
   if (i >= 0) pin = {t: i};
-  N.hidden = true; hover = null; update();
+  hover = null; update();
 }
-function offerMe(i){
-  if (me >= 0 || nudgeOff) return;
-  document.getElementById('nudge-type').textContent = T[i].l;
-  N.dataset.t = String(i); N.hidden = false;
-}
-document.getElementById('nudge-yes').addEventListener('click', () => setMe(+N.dataset.t));
-document.getElementById('nudge-no').addEventListener('click', () => { N.hidden = true; nudgeOff = true; save('btc-nudge', 'off'); });
+document.getElementById('skip-pick').addEventListener('click', () => { skipPick = true; save('btc-skip', 'on'); update(); });
 
 const thetaIn = document.getElementById('theta');
 thetaIn.value = String(theta);
@@ -494,8 +476,8 @@ const same = (a, b) => a && b && a.t === b.t && a.d === b.d && a.r === b.r;
 M.addEventListener('pointerover', e => { if (e.pointerType !== 'mouse') return; const t = targetOf(e); if (t && !same(t, hover)) { hover = t; update(); } });
 M.addEventListener('pointerleave', () => { if (hover) { hover = null; update(); } });
 M.addEventListener('focusin', e => { const t = targetOf(e); if (t && !same(t, hover)) { hover = t; update(); } });
-M.addEventListener('focusout', e => { if (!M.contains(e.relatedTarget)) { hover = null; update(); } });
-M.addEventListener('click', e => { const t = targetOf(e); if (t) { pin = t; hover = null; update(); if (t.t != null) offerMe(t.t); } });
+M.addEventListener('focusout', e => { if (hover && !M.contains(e.relatedTarget)) { hover = null; update(); } });
+M.addEventListener('click', e => { const t = targetOf(e); if (!t) return; if (t.t != null && picking()) { setMe(t.t); return; } pin = t; hover = null; update(); });
 
 /* panel */
 const P = document.getElementById('panel');
@@ -531,8 +513,8 @@ const rankOf = e => { const b = e.target.closest('.bar-row'); return b && MR.con
 MR.addEventListener('pointerover', e => { if (e.pointerType !== 'mouse') return; const t = rankOf(e); if (t && !same(t, hover)) { hover = t; update(); } });
 MR.addEventListener('pointerleave', () => { if (hover) { hover = null; update(); } });
 MR.addEventListener('focusin', e => { const t = rankOf(e); if (t && !same(t, hover)) { hover = t; update(); } });
-MR.addEventListener('focusout', e => { if (!MR.contains(e.relatedTarget)) { hover = null; update(); } });
-MR.addEventListener('click', e => { const t = rankOf(e); if (t) { pin = t; hover = null; update(); offerMe(t.t); } });
+MR.addEventListener('focusout', e => { if (hover && !MR.contains(e.relatedTarget)) { hover = null; update(); } });
+MR.addEventListener('click', e => { const t = rankOf(e); if (!t) return; if (picking()) { setMe(t.t); return; } pin = t; hover = null; update(); });
 
 function renderModel(m, p, plasma, f){
   const comp = plasma ? 'plasma' : 'red cells';
@@ -542,7 +524,7 @@ function renderModel(m, p, plasma, f){
   const lead = theta === 100
     ? 'At 100% same-type, every donor carries the average load.'
     : `<strong>${joinAnd(tops.map(i => T[i].l))}</strong> ${plasma ? 'plasma' : 'red-cell'} donations go furthest ${where(region)}: ${fmtV(topV)}× the average donor.`;
-  const mine = theta === 100 || tops.includes(me) ? '' : me < 0 ? ' Tap your type in the grid to compare.' : ` Yours, ${T[me].l}: ${fmtV(m.V[me])}×, ${ord(m.rank[me])} of 8.`;
+  const mine = theta === 100 || tops.includes(me) ? '' : me < 0 ? (skipPick ? '' : ' Tap your type in the grid to compare.') : ` Yours, ${T[me].l}: ${fmtV(m.V[me])}×, ${ord(m.rank[me])} of 8.`;
   document.getElementById('model-result').innerHTML = lead + mine;
 
   const maxV = Math.max(...m.V) * 1.06 || 1, avg = 100 / maxV;
@@ -704,8 +686,8 @@ function update(){
     e.classList.toggle('hl', j === hc);
   });
   colH.forEach((h, j) => { h.querySelector('.me').hidden = j !== me; });
-  document.getElementById('invite-hint').hidden = me >= 0;
-  M.classList.toggle('invite', me < 0);
+  document.getElementById('invite-hint').hidden = !picking();
+  M.classList.toggle('invite', picking());
   rankRows.forEach((r, i) => { r.querySelector('.me').hidden = i !== me; });
   M.classList.add('focusing');
   const m = model(p, plasma);
