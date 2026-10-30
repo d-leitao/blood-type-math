@@ -117,3 +117,56 @@ test('Portugal, red cells at 70% same-type: O− about 1.65×, near England\'s 1
 test('same-type share outside 0..1 is rejected', () => {
   assert.throws(() => scoreTypes(DATA.Portugal, 'red', 1.5), RangeError);
 });
+
+test('universal donors: O− for red cells, AB− and AB+ for plasma', () => {
+  assert.deepEqual(scoreTypes(DATA.Portugal, 'red').universal.map(i => TYPES[i].l), ['O−']);
+  assert.deepEqual(scoreTypes(DATA.Portugal, 'plasma').universal.map(i => TYPES[i].l), ['AB−', 'AB+']);
+});
+
+test('emergency use: average stays exactly 1 for any θ and share, in every country', () => {
+  for (const p of Object.values(DATA)) {
+    const total = p.reduce((a, b) => a + b, 0);
+    for (const theta of [0, 0.8, 1]) for (const f of [0, 0.16, 0.7, 0.9]) {
+      for (const component of ['red', 'plasma']) {
+        const { value } = scoreTypes(p, component, theta, f);
+        close(value.reduce((s, v, i) => s + v * p[i], 0) / total, 1, 1e-9);
+      }
+    }
+  }
+});
+
+test('emergency use takes exactly the set share of universal donors\' load', () => {
+  for (const f of [0.16, 0.7]) {
+    const r = scoreTypes(DATA.Portugal, 'red', 0.8, f);
+    close(r.emergencyLoad / r.value[idx['O−']], f, 1e-12);
+  }
+});
+
+test('emergency use: 0 changes nothing, more raises universal donors and lowers everyone else', () => {
+  const base = scoreTypes(DATA.Portugal, 'plasma', 0.8);
+  assert.deepEqual(scoreTypes(DATA.Portugal, 'plasma', 0.8, 0).value, base.value);
+  const r = scoreTypes(DATA.Portugal, 'plasma', 0.8, 0.7);
+  r.value.forEach((v, i) => (TYPES[i].abo === 'AB' ? assert.ok(v > base.value[i]) : assert.ok(v < base.value[i])));
+});
+
+test('calibration: θ 80% and 16% emergency use reproduce England\'s O− (13% of stock, 7.8% of patients)', () => {
+  const r = scoreTypes(DATA['United Kingdom'], 'red', 0.8, 0.16);
+  assert.ok(Math.abs(r.value[idx['O−']] - 13 / 7.8) < 0.05);
+});
+
+test('calibration: 70% emergency use comes close to Canada\'s AB plasma (14.1% of issues, about 3% of people)', () => {
+  const r = scoreTypes(DATA.Canada, 'plasma', 0.8, 0.7);
+  assert.ok(Math.abs(r.value[idx['AB+']] - 14.1 / 3) < 0.5);
+});
+
+test('emergency use stays bounded where universal donors are rare', () => {
+  for (const p of Object.values(DATA)) {
+    assert.ok(scoreTypes(p, 'red', 0.8, 0.16).value[idx['O−']] < 2.5);
+    assert.ok(scoreTypes(p, 'plasma', 0.8, 0.7).value[idx['AB+']] < 6);
+  }
+});
+
+test('emergency share of 1 or more is rejected', () => {
+  assert.throws(() => scoreTypes(DATA.Portugal, 'red', 0.8, 1), RangeError);
+  assert.throws(() => scoreTypes(DATA.Portugal, 'red', 0.8, -0.1), RangeError);
+});

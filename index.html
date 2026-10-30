@@ -222,7 +222,7 @@ button.ch,button.rh,button.c{appearance:none;border:0;font:inherit;color:inherit
 .theta-head label{font-weight:500;font-size:13.5px;color:var(--ink-2)}
 .theta-head output{font-family:var(--font-data);font-size:14px;font-variant-numeric:tabular-nums}
 .theta-track{position:relative;padding-top:16px}
-.theta-mark{position:absolute;top:0;left:var(--at);transform:translateX(-50%);font-family:var(--font-data);font-size:10.5px;color:var(--muted);white-space:nowrap}
+.theta-mark{position:absolute;top:0;left:calc(7px + (100% - 14px) * var(--at));transform:translateX(-50%);font-family:var(--font-data);font-size:10.5px;color:var(--muted);white-space:nowrap}
 .theta-mark::after{content:"";position:absolute;left:50%;top:13px;height:5px;border-left:1px solid var(--muted)}
 .theta input[type=range]{-webkit-appearance:none;appearance:none;display:block;width:100%;height:18px;margin:0;background:transparent;cursor:pointer;--fill:70%}
 .theta input[type=range]::-webkit-slider-runnable-track{height:4px;border-radius:2px;background:linear-gradient(to right,var(--ink) var(--fill),var(--track) var(--fill))}
@@ -329,13 +329,24 @@ button.bar-row:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
         <div class="theta">
           <div class="theta-head">
             <label for="theta">Patients given their own type</label>
-            <output id="theta-out" for="theta">70%</output>
+            <output id="theta-out" for="theta">80%</output>
           </div>
           <div class="theta-track">
-            <span class="theta-mark" style="--at:70%" aria-hidden="true">Estimated</span>
-            <input type="range" id="theta" min="0" max="100" step="5" value="70" aria-describedby="theta-help">
+            <span class="theta-mark" style="--at:.8" aria-hidden="true">Estimated</span>
+            <input type="range" id="theta" min="0" max="100" step="5" value="80" aria-describedby="theta-help">
           </div>
           <div class="theta-scale" aria-hidden="true"><span>Any compatible type</span><span>Always own type</span></div>
+        </div>
+        <div class="theta">
+          <div class="theta-head">
+            <label for="emerg" id="emerg-label">O− units used in emergencies</label>
+            <output id="emerg-out" for="emerg">16%</output>
+          </div>
+          <div class="theta-track">
+            <span class="theta-mark" id="emerg-mark" style="--at:.178" aria-hidden="true">Estimated</span>
+            <input type="range" id="emerg" min="0" max="90" step="2" value="16" aria-describedby="emerg-help">
+          </div>
+          <div class="theta-scale" aria-hidden="true"><span>None</span><span>90%</span></div>
         </div>
         <div class="chart-axis" id="rank-axis"><span></span><span class="ax"><span>Average</span></span><span></span></div>
         <div class="bars" id="m-rank"></div>
@@ -356,19 +367,21 @@ button.bar-row:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
     <section aria-labelledby="d-score">
       <h2 id="d-score">How the score works</h2>
       <p>Pressure on a patient group is <code>P = patients ÷ people who can donate to them</code>. At 1.0 every compatible donor is needed for that group alone.</p>
-      <p>A donor’s score is <code>θ + (1 − θ) × ΣP</code> over the groups it can give to, where <code>θ</code> is the share of patients given their own type. Scores average exactly 1.0 across the population, so 2.0 means twice the average donor’s load. Counting reach alone would overrate common pairings: A+ patients can already take blood from most people.</p>
+      <p>A donor’s score is <code>θ + (1 − θ) × ΣP</code> over the groups it can give to, where <code>θ</code> is the share of patients given their own type. Universal donors (O− red cells, AB plasma) also carry emergency use, before the patient’s type is known, and that slice comes out of everyone else’s share. Scores average exactly 1.0 across the population, so 2.0 means twice the average donor’s load. Counting reach alone would overrate common pairings: A+ patients can already take blood from most people.</p>
     </section>
     <section aria-labelledby="d-theta">
-      <h2 id="d-theta">Own-type matching</h2>
-      <p id="theta-help">The share of each group’s need met with the patient’s own type; the rest is shared across compatible donors. 0% is fully flexible, 100% gives every type exactly 1.0.</p>
-      <p>The estimate of about 70% matches national O− figures: England (7.8% of patients, 13% of red-cell stock; <a href="https://nhsbtdbe.blob.core.windows.net/umbraco-assets-corp/17159/o-neg-survey-2018-final2.pdf" target="_blank" rel="noopener">NHSBT 2018 audit</a>), Australia (9% of people, over 15% of demand; <a href="https://www.lifeblood.com.au/news-and-stories/trending-research/better-management-o-negative-blood-supply" target="_blank" rel="noopener">Lifeblood</a>) and the US (6.8% of donors, 12.1% of transfusions in 2023; <a href="https://www.aabb.org/docs/default-source/default-document-library/resources/association-bulletins/ab19-02.pdf" target="_blank" rel="noopener">AABB</a>) all imply 64–71%. A 2024 audit in Victoria, Australia implies about 35% (<a href="https://www.health.vic.gov.au/sites/default/files/2025-07/o-rhd-negative-rbc-audit-report-june-25.pdf" target="_blank" rel="noopener">Blood Matters</a>). No published figures were found for Portugal.</p>
+      <h2 id="d-theta">The two sliders</h2>
+      <p id="theta-help">Own type: the share of typed patients given their own type; the rest is shared across compatible donors. 0% is fully flexible. At 100% only emergency use separates the types.</p>
+      <p id="emerg-help">Emergencies: the share of universal donors’ blood used before the patient’s type is known. It’s a share of their blood, not of all blood, so it stays realistic where they’re rare. A fixed share of all blood would put about 15 times the average load on O− donors in Japan.</p>
+      <p>Red cells: in England 16% of O− units went to emergencies, and O− is 7.8% of patients but 13% of red-cell stock (<a href="https://nhsbtdbe.blob.core.windows.net/umbraco-assets-corp/17159/o-neg-survey-2018-final2.pdf" target="_blank" rel="noopener">NHSBT 2018 audit</a>). That implies about 80% own type. With the same emergency share, Australia (9% of people, over 15% of demand; <a href="https://www.lifeblood.com.au/news-and-stories/trending-research/better-management-o-negative-blood-supply" target="_blank" rel="noopener">Lifeblood</a>) and the US (6.8% of donors, 12.1% of transfusions in 2023; <a href="https://www.aabb.org/docs/default-source/default-document-library/resources/association-bulletins/ab19-02.pdf" target="_blank" rel="noopener">AABB</a>) imply 76–81%, and a 2024 audit in Victoria, Australia about 50% (<a href="https://www.health.vic.gov.au/sites/default/files/2025-07/o-rhd-negative-rbc-audit-report-june-25.pdf" target="_blank" rel="noopener">Blood Matters</a>).</p>
+      <p>Plasma: no audit found. About 70% matches Canada, where AB is 14% of plasma issued but about 3% of people (<a href="https://www.blood.ca/sites/default/files/2018-AB%20Plasma-Overview.pdf" target="_blank" rel="noopener">Canadian Blood Services</a>). No published figures were found for Portugal.</p>
     </section>
     <section aria-labelledby="d-assume">
       <h2 id="d-assume">Assumptions</h2>
       <ul>
         <li>Patients and donors are spread like the population and everyone donates equally. Real patients skew older, and donor pools differ.</li>
-        <li>The shared part is spread evenly. In reality it’s mostly O− (emergencies, expiring units, special requirements), so only O−’s score is anchored to data.</li>
-        <li>Much plasma becomes medicines, where type doesn’t matter, so the plasma view covers transfusion plasma only. It also understates AB: Canada issues 14% of its plasma as AB, from about 3% of people, more than even fully flexible matching predicts (<a href="https://www.blood.ca/sites/default/files/2018-AB%20Plasma-Overview.pdf" target="_blank" rel="noopener">Canadian Blood Services</a>).</li>
+        <li>Apart from emergencies, the shared part is spread evenly. Real substitution is lopsided (expiring units, special requirements), so the universal donors’ scores are the best anchored.</li>
+        <li>Much plasma becomes medicines, where type doesn’t matter, so the plasma view covers transfusion plasma only.</li>
         <li>ABO and RhD only. Hospitals still crossmatch every unit, and other antigen systems matter for some patients.</li>
       </ul>
     </section>
@@ -417,7 +430,10 @@ let mode = load('btc-mode', 'red'); if (mode !== 'red' && mode !== 'plasma') mod
 let region = load('btc-region', 'World'); if (!D.r[region]) region = 'World';
 let saved = parseInt(load('btc-sel', load('btc-me', '0')), 10);  // first visit: O− is selected
 let pin = saved >= 0 && saved < 8 ? {t: saved} : null;  // the highlight: a type {t}, a pairing {d, r}, or nothing
-let theta = parseInt(load('btc-theta', '70'), 10); if (!(theta >= 0 && theta <= 100)) theta = 70;
+let theta = parseInt(load('btc-theta', '80'), 10); if (!(theta >= 0 && theta <= 100)) theta = 80;
+const EST = {red: 16, plasma: 70}, EMAX = 90;  // estimated emergency share of universal donors' blood, per component
+const emerg = {};
+for (const k of ['red', 'plasma']) { const v = parseInt(load('btc-emerg-' + k, String(EST[k])), 10); emerg[k] = v >= 0 && v <= EMAX ? v : EST[k]; }
 
 document.getElementById('lg-ok').innerHTML = CHECK;
 document.getElementById('lg-no').innerHTML = CROSS;
@@ -448,6 +464,8 @@ const thetaIn = document.getElementById('theta');
 thetaIn.value = String(theta);
 thetaIn.style.setProperty('--fill', theta + '%');
 thetaIn.addEventListener('input', () => { theta = parseInt(thetaIn.value, 10); thetaIn.style.setProperty('--fill', theta + '%'); save('btc-theta', String(theta)); update(); });
+const emIn = document.getElementById('emerg');
+emIn.addEventListener('input', () => { emerg[mode] = parseInt(emIn.value, 10); save('btc-emerg-' + mode, String(emerg[mode])); update(); });
 
 document.querySelectorAll('.seg button').forEach(b => b.addEventListener('click', () => {
   mode = b.dataset.mode; save('btc-mode', mode); update();
@@ -499,8 +517,10 @@ P.addEventListener('click', e => {
 
 /* value model (see model.js) */
 function model(p, plasma){
-  const r = scoreTypes(p, plasma ? 'plasma' : 'red', theta / 100);
-  return {pool: r.pool, P: r.pressure, S: r.shared, V: r.value, rank: r.rank, order: r.order};
+  const em = emerg[plasma ? 'plasma' : 'red'];
+  const r = scoreTypes(p, plasma ? 'plasma' : 'red', theta / 100, em / 100);
+  return {pool: r.pool, P: r.pressure, S: r.shared, V: r.value, rank: r.rank, order: r.order,
+          U: r.universal, e: r.emergencyShare, eL: r.emergencyLoad, em, flat: theta === 100 && em === 0};
 }
 const fmtV = v => v >= 10 ? v.toFixed(1) : v.toFixed(2);
 const fmt3 = v => v.toFixed(3);
@@ -522,15 +542,21 @@ function renderModel(m, p, plasma, f){
   const top = m.order[0], b = f == null ? top : f;  // breakdown shows the highlighted type, else the top one
   const comp = plasma ? 'plasma' : 'red cells';
   document.getElementById('theta-out').textContent = theta + '%';
+  const key = plasma ? 'plasma' : 'red';
+  emIn.value = String(m.em);
+  emIn.style.setProperty('--fill', (m.em / EMAX * 100).toFixed(2) + '%');
+  document.getElementById('emerg-out').textContent = m.em + '%';
+  document.getElementById('emerg-label').textContent = `${plasma ? 'AB' : 'O−'} units used in emergencies`;
+  document.getElementById('emerg-mark').style.setProperty('--at', (EST[key] / EMAX).toFixed(4));
 
   const topV = m.V[m.order[0]], tops = m.order.filter(i => Math.abs(m.V[i] - topV) < 1e-9);
   // O− red cells and AB plasma reach every patient, so they top every population; ties share an ABO group (AB− and AB+ plasma)
   const topName = tops.length > 1 && tops.every(i => T[i].abo === T[tops[0]].abo) ? T[tops[0]].abo : joinAnd(tops.map(i => T[i].l));
-  const lead = theta === 100
+  const lead = m.flat
     ? 'When every patient gets their own type, every donor carries the average load.'
     : `<strong>${topName}</strong> ${plasma ? 'plasma always goes' : 'red cells always go'} furthest, since anyone can receive ${plasma ? 'it' : 'them'}. ${cap(where(region))}, ${/^[AEIOU]/.test(topName) ? 'an' : 'a'} ${topName} donor carries ${fmtV(topV)}× the average load.`;
   const sel = pin && pin.t != null ? pin.t : null;
-  const extra = theta === 100 || sel == null || tops.includes(sel) ? '' : ` ${T[sel].l}: ${fmtV(m.V[sel])}×, ${ord(m.rank[sel])} of 8.`;
+  const extra = m.flat || sel == null || tops.includes(sel) ? '' : ` ${T[sel].l}: ${fmtV(m.V[sel])}×, ${ord(m.rank[sel])} of 8.`;
   document.getElementById('model-result').innerHTML = lead + extra;
 
   const maxV = Math.max(...m.V) * 1.06 || 1, avg = 100 / maxV;
@@ -548,9 +574,11 @@ function renderModel(m, p, plasma, f){
   const d = T[b];
   document.getElementById('press-h').textContent = `Where ${d.l}’s score comes from`;
   document.getElementById('key-out').textContent = `Can’t receive from ${d.l}`;
-  document.getElementById('press-calc').innerHTML = theta === 0
-    ? `Score = ΣP = <strong>${fmtV(m.V[b])}</strong>`
-    : `Score = ${(theta / 100).toFixed(2)} + ${(1 - theta / 100).toFixed(2)} × ${fmt3(m.S[b])} = <strong>${fmtV(m.V[b])}</strong>`;
+  const th = theta / 100;
+  const inner = theta === 0 ? (m.e > 0 ? fmt3(m.S[b]) : 'ΣP') : theta === 100 ? '1' : `${th.toFixed(2)} + ${(1 - th).toFixed(2)} × ${fmt3(m.S[b])}`;
+  let calc = m.e > 0 ? `${(1 - m.e).toFixed(2)} × ${theta === 0 || theta === 100 ? inner : '(' + inner + ')'}` : inner;
+  if (m.e > 0 && m.U.includes(b)) calc += ` + ${fmtV(m.eL)} emergencies`;
+  document.getElementById('press-calc').innerHTML = `Score = ${calc} = <strong>${fmtV(m.V[b])}</strong>`;
   const maxP = Math.max(...m.P) || 1;
   T.forEach((u, j) => {
     const r = pressRows[j], inn = ok(plasma, d, u);
@@ -630,7 +658,7 @@ function renderPanel(a, p, plasma, m){
       <p class="p-bio">${bio(t, plasma)}</p>
       <table class="p-table"><thead><tr><th scope="col">Gives ${plasma ? 'plasma' : 'red cells'} to</th><th scope="col">Gets them from</th></tr></thead>
       <tbody><tr><td><span class="v">${fmt(s.gp)}%</span><span class="ts">${listTxt(s.g)}</span></td><td><span class="v">${fmt(s.rp)}%</span><span class="ts">${listTxt(s.r)}</span></td></tr></tbody></table>
-      <p class="p-value">Load per donor: <strong>${fmtV(m.V[i])}×</strong> average${theta === 100 ? '' : ', ' + ord(m.rank[i]) + ' of 8'}. <button type="button" class="linkbtn" data-jump>See model</button></p>
+      <p class="p-value">Load per donor: <strong>${fmtV(m.V[i])}×</strong> average${m.flat ? '' : ', ' + ord(m.rank[i]) + ' of 8'}. <button type="button" class="linkbtn" data-jump>See model</button></p>
       <p class="hint">% = share of people on the other side. Tap a square for one pairing.</p>`;
   } else {
     const i = a.d, j = a.r, d = T[i], r = T[j], k = ok(plasma, d, r);

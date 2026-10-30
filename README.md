@@ -15,37 +15,45 @@ An interactive map of who can give blood to whom, with how common each type is i
 
 A donation goes further when it can reach patients who have few other donors to rely on. Counting how many people a type can give to overrates common pairings: A+ patients can already take red cells from most of the population, so one more donor for them adds little. The model weighs each patient group by how hard it is to supply.
 
-With `p[j]` the share of people with type `j`, and `θ` the share of each group's need met with same-type blood:
+With `p[j]` the share of people with type `j`, `θ` the share of typed patients given their own type, and `f` the share of universal donors' blood used in emergencies:
 
 ```
 pool[j]     = Σ p[i]        over donor types i that can give to j     (who can donate to you)
 pressure[j] = p[j] / pool[j]                                          (need per compatible donor)
 shared[i]   = Σ pressure[j] over recipient types j that i can give to
-score[i]    = θ + (1 − θ) · shared[i]
+matched[i]  = θ + (1 − θ) · shared[i]
+score[i]    = (1 − e) · matched[i] + e / u     for universal donors
+score[i]    = (1 − e) · matched[i]             for everyone else
 ```
 
-The part of each group's need not met with same-type blood, `1 − θ`, is split evenly across everyone who can donate to that group, and the score is the load that lands on one donor. Its population-weighted average is exactly 1 for any `θ`, so 2.0 means twice the load of the average donor.
+The part of each group's need not met with same-type blood, `1 − θ`, is split evenly across everyone who can donate to that group. Universal donors (O− for red cells, AB− and AB+ for plasma) can give to anyone, so they also take emergency use, when blood is needed before the patient's type is known. `u` is their share of the population, and `e = f·u·M / (1 − f + f·u·M)` is the share of all blood used in emergencies, where `M` is their `matched` load. That makes emergencies exactly `f` of the universal donors' load. The population-weighted average score is exactly 1 for any `θ` and `f`, so 2.0 means twice the load of the average donor.
 
-`θ` is a slider on the page:
+Emergency use is set as a share of the universal donors' blood rather than of all blood. A fixed share of all blood would explode where they're rare: 2% of all red cells going to O− in Bhutan, where O− is 0.06% of people, would score O− donors at about 35×.
 
-- **0%:** any compatible unit can go to any patient. This is the most flexible case and an upper bound on how much universal donors stand out.
-- **100%:** every patient gets their own type, and every score is exactly 1.
-- **70% (the default):** roughly reproduces England's figures for O−. O− is 7.8% of hospital patients but 13% of red-cell stock, and 41% of O− units go to patients who aren't O− ([NHSBT 2018 audit](https://nhsbtdbe.blob.core.windows.net/umbraco-assets-corp/17159/o-neg-survey-2018-final2.pdf)). There's no comparable data for other countries or for plasma, so treat 70% as a rough setting, not a measurement.
+Both are sliders on the page:
 
-Hospitals give most patients their own type and substitute mainly in emergencies before a patient is typed, for units about to expire, and for patients with special requirements. That's why the default is closer to 100% than to 0%.
+| Slider | Estimate | Source |
+|---|---|---|
+| Own type, `θ` | 80% | England: O− is 7.8% of patients but 13% of red-cell stock, and 16% of O− units go to emergencies ([NHSBT 2018 audit](https://nhsbtdbe.blob.core.windows.net/umbraco-assets-corp/17159/o-neg-survey-2018-final2.pdf)). With the same emergency share, Australia ([Lifeblood](https://www.lifeblood.com.au/news-and-stories/trending-research/better-management-o-negative-blood-supply)) and the US ([AABB](https://www.aabb.org/docs/default-source/default-document-library/resources/association-bulletins/ab19-02.pdf)) imply 76–81%, and a 2024 audit in Victoria, Australia about 50% ([Blood Matters](https://www.health.vic.gov.au/sites/default/files/2025-07/o-rhd-negative-rbc-audit-report-june-25.pdf)). |
+| Emergencies, red cells | 16% | The NHSBT audit above. |
+| Emergencies, plasma | 70% | No audit found. 70% reproduces Canada, where AB is 14% of plasma issued but about 3% of people ([Canadian Blood Services](https://www.blood.ca/sites/default/files/2018-AB%20Plasma-Overview.pdf)). |
 
-Red-cell scores for Portugal:
+None of these are measured for Portugal. At `θ` = 0% and no emergencies, any compatible unit can go to any patient: the most flexible case. At 100% and no emergencies, every score is exactly 1.
 
-| Same-type share | O− | O+ | A− | A+ | B− | B+ | AB− | AB+ |
+Scores for Portugal:
+
+| | O− | O+ | A− | A+ | B− | B+ | AB− | AB+ |
 |---|---|---|---|---|---|---|---|---|
-| 0% (fully flexible) | 3.18 | 1.46 | 1.04 | 0.48 | 0.35 | 0.16 | 0.06 | 0.03 |
-| 70% (about England) | 1.65 | 1.14 | 1.01 | 0.84 | 0.80 | 0.75 | 0.72 | 0.71 |
+| Red cells, fully flexible | 3.18 | 1.46 | 1.04 | 0.48 | 0.35 | 0.16 | 0.06 | 0.03 |
+| Red cells, estimates (80%, 16%) | 1.68 | 1.07 | 0.99 | 0.88 | 0.86 | 0.82 | 0.80 | 0.79 |
+| Plasma, fully flexible | 0.42 | 0.42 | 1.35 | 1.35 | 1.12 | 1.12 | 3.05 | 3.05 |
+| Plasma, estimates (80%, 70%) | 0.80 | 0.80 | 0.96 | 0.96 | 0.92 | 0.92 | 4.23 | 4.23 |
 
-The same-type share changes how far apart the scores are, not their order.
+The universal donors come first in every country, because they reach every patient group. What changes by country is how far ahead they are.
 
 **Limits**
 
-- One same-type share applies to every group, and the rest is spread evenly across compatible donors. Real substitution is lopsided, mostly O− (and some O+ in trauma). O−'s score at about 70% is anchored to data; the other types' scores are rougher.
+- One own-type share applies to every group, and apart from emergencies the rest is spread evenly across compatible donors. Real substitution is lopsided (units about to expire, special requirements), so the universal donors' scores are the best anchored and the others are rougher.
 - Patients and donors are assumed to be spread like the general population, with everyone donating at the same rate. In reality patients skew older, and donor pools differ by age and ethnicity.
 - Only ABO and RhD count, and every unit is worth the same. Plasma ignores RhD.
 - Much donated plasma is made into medicines, where blood type doesn't matter. The plasma view only applies to plasma used directly in transfusions.
