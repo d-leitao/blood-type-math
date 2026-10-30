@@ -123,6 +123,9 @@ button.ch,button.rh,button.c{appearance:none;border:0;font:inherit;color:inherit
 .c.no.hl{background:var(--wash)}
 .c.cur{box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--ink);position:relative;z-index:1}
 .ch.hl,.rh.hl{background:var(--wash)}
+.ch.ghost,.rh.ghost,.edge.ghost{box-shadow:inset 0 0 0 1.5px var(--ink-2)}
+.matrix.focusing .c.ghost:not(.hl){opacity:.85}
+.c.cur-ghost{box-shadow:0 0 0 2px var(--surface),0 0 0 3.5px var(--ink-2);position:relative;z-index:1}
 .ch:focus-visible,.rh:focus-visible,.c:focus-visible,.seg button:focus-visible,select:focus-visible,.linkbtn:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
 
 .edge{display:grid;align-content:center;gap:5px;padding:0 4px}
@@ -250,6 +253,7 @@ button.ch,button.rh,button.c{appearance:none;border:0;font:inherit;color:inherit
 button.bar-row{appearance:none;border:0;background:transparent;font:inherit;color:inherit;text-align:left;cursor:pointer;margin:0;width:100%}
 button.bar-row:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
 .bar-row.focus{background:var(--wash)}
+.bar-row.ghost:not(.focus){box-shadow:inset 0 0 0 1.5px var(--ink-2)}
 .bl{display:flex;align-items:center;gap:8px;min-width:0}
 .tl.sm{font-size:15px}
 .bt{position:relative;align-self:stretch;display:flex;align-items:center;min-width:0}
@@ -453,9 +457,34 @@ sel.addEventListener('change', () => { region = sel.value; save('btc-region', re
 
 /* your type: claimed from the grid, the ranking or the panel */
 function setPin(t){
-  pin = t;
+  pin = t; hover = null; stopTimers();
   save('btc-sel', pin && pin.t != null ? String(pin.t) : '-1');
   update();
+}
+
+/* Hover previews, click selects. The selection stays outlined while something else is previewed.
+   Timing works like tooltips: a short delay before the first preview, then instant while moving
+   between items, and a grace period on leaving so crossing a gap doesn't flicker. */
+let hover = null, enterT = 0, leaveT = 0;
+const ENTER_MS = 90, LEAVE_MS = 200;
+function setHover(t){ if (!same(t, hover)) { hover = t; update(); } }
+function stopTimers(){ clearTimeout(enterT); clearTimeout(leaveT); }
+function hoverIn(t){
+  stopTimers();
+  if (hover) setHover(t);
+  else enterT = setTimeout(() => setHover(t), ENTER_MS);
+}
+function hoverOut(){
+  stopTimers();
+  if (hover) leaveT = setTimeout(() => setHover(null), LEAVE_MS);
+}
+const isMouse = e => e.pointerType !== 'touch';
+function previewOn(el, find){
+  el.addEventListener('pointerover', e => { if (!isMouse(e)) return; const t = find(e); t ? hoverIn(t) : hoverOut(); });
+  el.addEventListener('pointerleave', e => { if (isMouse(e)) hoverOut(); });
+  // keyboard focus previews too; mouse clicks also focus buttons, so only count visible focus
+  el.addEventListener('focusin', e => { const t = find(e); if (t && e.target.matches(':focus-visible')) { stopTimers(); setHover(t); } });
+  el.addEventListener('focusout', e => { if (hover && !el.contains(e.relatedTarget)) setHover(null); });
 }
 const toggle = t => setPin(same(t, pin) ? null : t);
 document.getElementById('clear-sel').addEventListener('click', () => setPin(null));
@@ -503,6 +532,7 @@ const targetOf = e => {
 };
 const same = (a, b) => !!(a && b && a.t === b.t && a.d === b.d && a.r === b.r);
 M.addEventListener('click', e => { const t = targetOf(e); if (t) toggle(t); });
+previewOn(M, targetOf);
 
 /* panel */
 const P = document.getElementById('panel');
@@ -537,8 +567,9 @@ const pressRows = T.map(t => {
 });
 const rankOf = e => { const b = e.target.closest('.bar-row'); return b && MR.contains(b) ? {t: +b.dataset.t} : null; };
 MR.addEventListener('click', e => { const t = rankOf(e); if (t) toggle(t); });
+previewOn(MR, rankOf);
 
-function renderModel(m, p, plasma, f){
+function renderModel(m, p, plasma, f, gt){
   const top = m.order[0], b = f == null ? top : f;  // breakdown shows the highlighted type, else the top one
   const comp = plasma ? 'plasma' : 'red cells';
   document.getElementById('theta-out').textContent = theta + '%';
@@ -568,6 +599,7 @@ function renderModel(m, p, plasma, f){
     r.querySelector('.bf').style.width = (m.V[i] / maxV * 100).toFixed(2) + '%';
     r.querySelector('.bv').textContent = fmtV(m.V[i]) + '×';
     r.classList.toggle('focus', i === f);
+    r.classList.toggle('ghost', i === gt);
     r.setAttribute('aria-label', `${T[i].l}: ${fmtV(m.V[i])} times the average donor, ${ord(m.rank[i])} of 8. ${i === f ? 'Clear highlight.' : 'Highlight.'}`);
   });
 
@@ -676,8 +708,10 @@ function renderPanel(a, p, plasma, m){
 }
 
 function update(){
-  const p = D.r[region], plasma = mode === 'plasma', a = pin;
+  const p = D.r[region], plasma = mode === 'plasma', a = hover || pin;
   const hr = !a ? -1 : a.t != null ? a.t : a.d, hc = !a ? -1 : a.t != null ? a.t : a.r;
+  const g = hover && pin && !same(hover, pin) ? pin : null;
+  const gr = !g ? -1 : g.t != null ? g.t : g.d, gc = !g ? -1 : g.t != null ? g.t : g.r;
   const maxP = Math.max(50, ...p);
   const comp = plasma ? 'plasma' : 'red cells';
 
@@ -692,6 +726,7 @@ function update(){
     h.querySelector('.num').textContent = fmt(p[j]) + '%';
     h.querySelector('.ch-bar').style.height = (p[j] / maxP * 100).toFixed(2) + '%';
     h.classList.toggle('hl', j === hc);
+    h.classList.toggle('ghost', j === gc && j !== hc);
     h.setAttribute('aria-label', `Recipient ${t.l}, ${fmt(p[j])}% of people ${where(region)}. Show profile.`);
   });
 
@@ -702,6 +737,7 @@ function update(){
     h.querySelector('.num').textContent = fmt(p[i]) + '%';
     h.querySelector('.fill').style.width = (p[i] / maxP * 100).toFixed(2) + '%';
     h.classList.toggle('hl', i === hr);
+    h.classList.toggle('ghost', i === gr && i !== hr);
     h.setAttribute('aria-label', `Donor ${t.l}, ${fmt(p[i])}% of people ${where(region)}. Show profile.`);
     let reach = 0;
     T.forEach((u, j) => {
@@ -710,23 +746,27 @@ function update(){
       if (c.dataset.s !== s){ c.dataset.s = s; c.classList.remove('ok', 'no'); c.classList.add(s); c.innerHTML = k ? CHECK : CROSS; }
       c.classList.toggle('hl', i === hr || j === hc);
       c.classList.toggle('cur', !!a && a.t == null && i === a.d && j === a.r);
+      c.classList.toggle('ghost', (i === gr || j === gc) && i !== hr && j !== hc);
+      c.classList.toggle('cur-ghost', !!g && g.t == null && i === g.d && j === g.r);
       c.setAttribute('aria-label', `${t.l} ${comp} to ${u.l}: ${k ? 'compatible' : 'not compatible'}`);
       c.title = `${t.l} ${comp} → ${u.l}: ${k ? 'compatible' : 'not compatible'}`;
     });
     reachC[i].querySelector('.num').textContent = fmt(reach) + '%';
     reachC[i].querySelector('.fill').style.width = Math.min(100, reach).toFixed(2) + '%';
     reachC[i].classList.toggle('hl', i === hr);
+    reachC[i].classList.toggle('ghost', i === gr && i !== hr);
   });
   poolC.forEach((e, j) => {
     e.querySelector('.num').textContent = fmt(pool[j]) + '%';
     e.querySelector('.fill').style.width = Math.min(100, pool[j]).toFixed(2) + '%';
     e.classList.toggle('hl', j === hc);
+    e.classList.toggle('ghost', j === gc && j !== hc);
   });
   M.classList.toggle('focusing', !!a);
   document.getElementById('clear-sel').hidden = !pin;
   const m = model(p, plasma);
   renderPanel(a, p, plasma, m);
-  renderModel(m, p, plasma, !a ? null : a.t != null ? a.t : a.d);
+  renderModel(m, p, plasma, !a ? null : a.t != null ? a.t : a.d, !g ? null : g.t != null ? g.t : g.d);
 }
 update();
 })();
