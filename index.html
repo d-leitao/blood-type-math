@@ -327,8 +327,8 @@ button.bar-row:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
     <div class="model-charts">
       <div class="chart rank" id="rank-chart">
         <div class="chart-head">
-          <h3>Demand ÷ supply</h3>
-          <p class="sub">Above 1, patients need a type faster than its donors give it, if everyone donates equally. Tap a type to highlight it.</p>
+          <h3>Donation rate needed</h3>
+          <p class="sub">How often each type’s donors would need to give to meet demand, against the average donor. Tap a type to highlight it.</p>
         </div>
         <div class="theta">
           <div class="theta-head">
@@ -352,7 +352,7 @@ button.bar-row:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
           </div>
           <div class="theta-scale" aria-hidden="true"><span>None</span><span>90%</span></div>
         </div>
-        <div class="chart-axis" id="rank-axis"><span></span><span class="ax"><span>Balanced</span></span><span></span></div>
+        <div class="chart-axis" id="rank-axis"><span></span><span class="ax"><span>Average donor</span></span><span></span></div>
         <div class="bars" id="m-rank"></div>
       </div>
       <div class="chart press">
@@ -371,7 +371,7 @@ button.bar-row:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
     <section aria-labelledby="d-score">
       <h2 id="d-score">How the score works</h2>
       <p>Pressure on a patient group is <code>P = patients ÷ people who can donate to them</code>. At 1.0 every compatible donor is needed for that group alone.</p>
-      <p>A donor’s score is <code>θ + (1 − θ) × ΣP</code> over the groups it can give to, where <code>θ</code> is the share of patients given their own type. Universal donors (O− red cells, AB plasma) also carry emergency use, before the patient’s type is known, and that slice comes out of everyone else’s share. The score is demand for a type’s blood ÷ its supply, if everyone donates at the same rate. Total demand equals total supply, so scores average exactly 1.0: above 1 a type runs short, below 1 some of it isn’t needed. Counting reach alone would overrate common pairings: A+ patients can already take blood from most people.</p>
+      <p>A donor’s score is <code>θ + (1 − θ) × ΣP</code> over the groups it can give to, where <code>θ</code> is the share of patients given their own type. Universal donors (O− red cells, AB plasma) also carry emergency use, before the patient’s type is known, and that slice comes out of everyone else’s share. The score is how often a type’s donors would need to give to meet demand, against the average donor. Total demand equals total donations, so scores average exactly 1.0. Above 1, the type runs short unless its donors give more often. Below 1, its donors could give less often, or give another component. Counting reach alone would overrate common pairings: A+ patients can already take blood from most people.</p>
     </section>
     <section aria-labelledby="d-theta">
       <h2 id="d-theta">The two sliders</h2>
@@ -383,7 +383,7 @@ button.bar-row:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
     <section aria-labelledby="d-assume">
       <h2 id="d-assume">Assumptions</h2>
       <ul>
-        <li>Patients and donors are spread like the population and everyone donates equally. Real patients skew older, and donor pools differ.</li>
+        <li>Patients have the same type mix as the figures above, many of which come from donors. Real patients skew older, and donor pools differ by age and ethnicity.</li>
         <li>Apart from emergencies, the shared part is spread evenly. Real substitution is lopsided (expiring units, special requirements), so the universal donors’ scores are the best anchored.</li>
         <li>Much plasma becomes medicines, where type doesn’t matter, so the plasma view covers transfusion plasma only.</li>
         <li>ABO and RhD only. Hospitals still crossmatch every unit, and other antigen systems matter for some patients.</li>
@@ -434,10 +434,9 @@ let mode = load('btc-mode', 'red'); if (mode !== 'red' && mode !== 'plasma') mod
 let region = load('btc-region', 'World'); if (!D.r[region]) region = 'World';
 let saved = parseInt(load('btc-sel', load('btc-me', '0')), 10);  // first visit: O− is selected
 let pin = saved >= 0 && saved < 8 ? {t: saved} : null;  // the highlight: a type {t}, a pairing {d, r}, or nothing
-let theta = parseInt(load('btc-theta', '80'), 10); if (!(theta >= 0 && theta <= 100)) theta = 80;
+let theta = 80;  // sliders are what-ifs, so they always open at the best estimates
 const EST = {red: 16, plasma: 70}, EMAX = 90;  // estimated emergency share of universal donors' blood, per component
-const emerg = {};
-for (const k of ['red', 'plasma']) { const v = parseInt(load('btc-emerg-' + k, String(EST[k])), 10); emerg[k] = v >= 0 && v <= EMAX ? v : EST[k]; }
+const emerg = {...EST};
 
 document.getElementById('lg-ok').innerHTML = CHECK;
 document.getElementById('lg-no').innerHTML = CROSS;
@@ -492,9 +491,9 @@ document.getElementById('clear-sel').addEventListener('click', () => setPin(null
 const thetaIn = document.getElementById('theta');
 thetaIn.value = String(theta);
 thetaIn.style.setProperty('--fill', theta + '%');
-thetaIn.addEventListener('input', () => { theta = parseInt(thetaIn.value, 10); thetaIn.style.setProperty('--fill', theta + '%'); save('btc-theta', String(theta)); update(); });
+thetaIn.addEventListener('input', () => { theta = parseInt(thetaIn.value, 10); thetaIn.style.setProperty('--fill', theta + '%'); update(); });
 const emIn = document.getElementById('emerg');
-emIn.addEventListener('input', () => { emerg[mode] = parseInt(emIn.value, 10); save('btc-emerg-' + mode, String(emerg[mode])); update(); });
+emIn.addEventListener('input', () => { emerg[mode] = parseInt(emIn.value, 10); update(); });
 
 document.querySelectorAll('.seg button').forEach(b => b.addEventListener('click', () => {
   mode = b.dataset.mode; save('btc-mode', mode); update();
@@ -584,8 +583,8 @@ function renderModel(m, p, plasma, f, gt){
   // O− red cells and AB plasma reach every patient, so they top every population; ties share an ABO group (AB− and AB+ plasma)
   const topName = tops.length > 1 && tops.every(i => T[i].abo === T[tops[0]].abo) ? T[tops[0]].abo : joinAnd(tops.map(i => T[i].l));
   const lead = m.flat
-    ? 'When every patient gets their own type and there are no emergencies, demand matches supply for every type.'
-    : `<strong>${topName}</strong> ${plasma ? 'plasma is' : 'red cells are'} always the most needed, since anyone can receive ${plasma ? 'it' : 'them'}. ${cap(where(region))}, patients need ${fmtV(topV)}× as much ${topName}${plasma ? ' plasma' : ''} as ${topName} donors give.`;
+    ? 'When every patient gets their own type and there are no emergencies, every type’s donors give at the average rate.'
+    : `<strong>${topName}</strong> ${plasma ? 'plasma is' : 'red cells are'} always the most needed, since anyone can receive ${plasma ? 'it' : 'them'}. ${cap(where(region))}, ${topName} donors would need to give ${fmtV(topV)}× as often as the average donor to keep up.`;
   const sel = pin && pin.t != null ? pin.t : null;
   const extra = m.flat || sel == null || tops.includes(sel) ? '' : ` ${T[sel].l}: ${fmtV(m.V[sel])}×, ${ord(m.rank[sel])} of 8.`;
   document.getElementById('model-result').innerHTML = lead + extra;
@@ -600,7 +599,7 @@ function renderModel(m, p, plasma, f, gt){
     r.querySelector('.bv').textContent = fmtV(m.V[i]) + '×';
     r.classList.toggle('focus', i === f);
     r.classList.toggle('ghost', i === gt);
-    r.setAttribute('aria-label', `${T[i].l}: demand ${fmtV(m.V[i])} times supply, ${ord(m.rank[i])} of 8. ${i === f ? 'Clear highlight.' : 'Highlight.'}`);
+    r.setAttribute('aria-label', `${T[i].l}: donors would need to give ${fmtV(m.V[i])} times as often as the average donor, ${ord(m.rank[i])} of 8. ${i === f ? 'Clear highlight.' : 'Highlight.'}`);
   });
 
   const d = T[b];
@@ -690,7 +689,7 @@ function renderPanel(a, p, plasma, m){
       <p class="p-bio">${bio(t, plasma)}</p>
       <table class="p-table"><thead><tr><th scope="col">Gives ${plasma ? 'plasma' : 'red cells'} to</th><th scope="col">Gets them from</th></tr></thead>
       <tbody><tr><td><span class="v">${fmt(s.gp)}%</span><span class="ts">${listTxt(s.g)}</span></td><td><span class="v">${fmt(s.rp)}%</span><span class="ts">${listTxt(s.r)}</span></td></tr></tbody></table>
-      <p class="p-value">Demand ÷ supply: <strong>${fmtV(m.V[i])}×</strong>${m.flat ? '' : ', ' + ord(m.rank[i]) + ' of 8'}. <button type="button" class="linkbtn" data-jump>See model</button></p>
+      <p class="p-value">Donation rate needed: <strong>${fmtV(m.V[i])}×</strong> the average donor${m.flat ? '' : ', ' + ord(m.rank[i]) + ' of 8'}. <button type="button" class="linkbtn" data-jump>See model</button></p>
       <p class="hint">% = share of people on the other side. Tap a square for one pairing.</p>`;
   } else {
     const i = a.d, j = a.r, d = T[i], r = T[j], k = ok(plasma, d, r);
