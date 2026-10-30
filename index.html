@@ -49,24 +49,28 @@ img{max-width:100%}
 }
 
 body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
-.page{max-width:1220px;margin:0 auto;padding-block:40px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:24px}
+.page{max-width:1220px;margin:0 auto;padding-block:28px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:20px}
 
 .eyebrow,.p-eyebrow{font-family:var(--font-data);font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
-h1{font-family:var(--font-display);font-weight:850;font-stretch:118%;font-size:clamp(30px,5.2vw,54px);line-height:1;letter-spacing:-.01em;margin:8px 0 14px;text-wrap:balance}
-.lede{max-width:64ch;color:var(--ink-2);margin:0}
+h1{font-family:var(--font-display);font-weight:850;font-stretch:118%;font-size:clamp(32px,5.2vw,54px);line-height:1;letter-spacing:-.01em;margin:0 0 8px;text-wrap:balance}
+.lede{max-width:46ch;color:var(--ink-2);margin:0;font-size:16px}
+.top{display:grid;gap:16px 32px;align-items:end;grid-template-columns:minmax(0,1fr)}
+@media (min-width:960px){.top{grid-template-columns:minmax(0,1fr) auto}}
+.strip{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 28px}
 
-.controls{display:flex;flex-wrap:wrap;gap:14px 24px;align-items:end}
+.controls{display:flex;flex-wrap:wrap;gap:12px 16px;align-items:end}
 .field{display:grid;gap:6px;min-width:0}
 .field-label{font-size:11.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:500}
-.seg{display:inline-flex;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:3px;gap:3px}
-.seg button{appearance:none;border:0;background:transparent;font:inherit;font-weight:500;color:var(--ink-2);padding:7px 16px;border-radius:7px;cursor:pointer}
+.seg{display:inline-flex;box-sizing:border-box;height:42px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:3px;gap:3px}
+.seg button{appearance:none;border:0;background:transparent;font:inherit;font-weight:500;color:var(--ink-2);padding:0 14px;border-radius:7px;cursor:pointer}
 .seg button:hover{color:var(--ink)}
 .seg button[aria-pressed="true"]{background:var(--ink);color:var(--surface)}
-select{font:inherit;font-size:14.5px;padding:8px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);max-width:100%;cursor:pointer}
-.mode-note{margin:0;color:var(--ink-2);font-size:14px;max-width:70ch}
+select{font:inherit;font-size:14.5px;box-sizing:border-box;height:42px;padding:0 10px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);max-width:100%;cursor:pointer}
+#region{max-width:220px}
+.mode-note{margin:0;color:var(--ink-2);font-size:14px}
 .mode-note strong{color:var(--ink);font-weight:600}
 
-.legend{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:10px 22px;font-size:13px;color:var(--ink-2)}
+.legend{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px 18px;font-size:13px;color:var(--ink-2)}
 .legend li{display:flex;align-items:center;gap:8px}
 .legend .pair-chips{display:flex;gap:2px}
 .lg-tile{width:22px;height:22px;border-radius:6px;display:grid;place-items:center;flex:none}
@@ -175,49 +179,45 @@ button.ch,button.rh,button.c{appearance:none;border:0;font:inherit;color:inherit
 .linkbtn:hover{text-decoration-color:var(--ink)}
 .hint{font-size:12.5px;color:var(--muted);margin:0}
 
-.notes{display:grid;gap:10px;max-width:78ch;font-size:13.5px;color:var(--ink-2);border-top:1px solid var(--line);padding-top:22px}
-.notes h2{font-size:12px;font-family:var(--font-data);letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:500;margin:0}
-.notes p{margin:0}
-.notes a{color:var(--ink);text-underline-offset:3px}
+.details{display:grid;gap:18px 32px;grid-template-columns:minmax(0,1fr);font-size:13px;line-height:1.55;color:var(--ink-2);border-top:1px solid var(--line);padding-top:20px;scroll-margin-top:calc(env(safe-area-inset-top,0px) + 16px)}
+@media (min-width:760px){.details{grid-template-columns:1fr 1fr}}
+.details section{display:grid;gap:6px;align-content:start;min-width:0}
+.details h2{font-size:11.5px;font-family:var(--font-data);letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:500;margin:0}
+.details p{margin:0}
+.details ul{margin:0;padding-left:18px;display:grid;gap:4px}
+.details a{color:var(--ink);text-underline-offset:3px}
+.details code{font-family:var(--font-data);font-size:12.5px;color:var(--ink);white-space:normal}
 
 .me{font-family:var(--font-data);font-size:9.5px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;line-height:1;color:var(--ink);border:1px solid var(--ink);border-radius:4px;padding:2px 4px}
 .tag.me-tag{background:var(--ink);color:var(--surface)}
-.foot{font-size:13px;color:var(--muted);border-top:1px solid var(--line);padding-top:18px}
+.foot{font-size:13px;color:var(--muted)}
 .foot a{color:var(--ink-2);text-underline-offset:3px}
 .load-error{margin:0;padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink)}
 .p-value{margin:0;font-size:13.5px;color:var(--ink-2)}
 .p-value strong{font-family:var(--font-data);font-weight:500;color:var(--ink);font-variant-numeric:tabular-nums}
 
 /* value model */
-.model{display:grid;gap:20px;scroll-margin-top:calc(env(safe-area-inset-top,0px) + 16px);border-top:1px solid var(--line);padding-top:28px}
-.model-head{display:grid;gap:8px;max-width:72ch}
+.model{display:grid;gap:16px;scroll-margin-top:calc(env(safe-area-inset-top,0px) + 16px);padding-top:8px}
+.model-head{display:grid;gap:6px}
 .model h2{font-family:var(--font-display);font-weight:850;font-stretch:115%;font-size:clamp(24px,3.6vw,36px);line-height:1.05;letter-spacing:-.005em;margin:0;text-wrap:balance}
 .model-lede{margin:0;color:var(--ink-2)}
-.steps{display:grid;gap:12px;grid-template-columns:minmax(0,1fr)}
-@media (min-width:760px){.steps{grid-template-columns:1fr 1fr}}
-.step{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px 18px;display:grid;gap:8px;align-content:start;min-width:0}
-.step-n{font-family:var(--font-data);font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
-.formula{font-family:var(--font-data);font-size:17px;color:var(--ink);line-height:1.6}
-.formula var,.step var{font-family:var(--font-body);font-style:italic}
-.formula sub{font-size:.7em}
-.step p{margin:0;font-size:13.5px;color:var(--ink-2)}
-.model-result{margin:0;font-size:17px;max-width:68ch;text-wrap:pretty}
+.model-result{margin:0;font-size:17px;text-wrap:pretty}
 .model-result strong{font-family:var(--font-display);font-weight:800;font-stretch:112%}
-.theta{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px 18px;display:grid;gap:10px;max-width:760px;min-width:0}
+.theta{display:grid;gap:6px;padding:0 6px;min-width:0}
 .theta-head{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px 16px}
-.theta-head label{font-weight:600;font-size:15px}
-.theta-head output{font-family:var(--font-data);font-size:16px;font-variant-numeric:tabular-nums}
-.theta-track{position:relative;padding-top:22px}
+.theta-head label{font-weight:500;font-size:13.5px;color:var(--ink-2)}
+.theta-head output{font-family:var(--font-data);font-size:14px;font-variant-numeric:tabular-nums}
+.theta-track{position:relative;padding-top:20px}
 .theta-mark{position:absolute;top:0;left:var(--at);transform:translateX(-50%);font-family:var(--font-data);font-size:11px;color:var(--muted);white-space:nowrap}
 .theta-mark::after{content:"";position:absolute;left:50%;top:15px;height:6px;border-left:1px solid var(--muted)}
 .theta input[type=range]{display:block;width:100%;margin:0;accent-color:var(--ink);cursor:pointer}
 .theta input[type=range]:focus-visible{outline:2px solid var(--ink);outline-offset:4px}
-.theta-scale{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:var(--muted)}
-.theta p{margin:0;font-size:13.5px;color:var(--ink-2)}
-.theta a{color:var(--ink);text-underline-offset:3px}
+.theta-scale{display:flex;justify-content:space-between;gap:8px;font-size:11.5px;color:var(--muted)}
+.calc{margin:0;padding:4px 6px 0;font-family:var(--font-data);font-size:13px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.calc strong{color:var(--ink);font-weight:500}
 .model-charts{display:grid;gap:20px;grid-template-columns:minmax(0,1fr)}
 @media (min-width:900px){.model-charts{grid-template-columns:1fr 1fr}}
-.chart{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px 14px 14px;display:grid;gap:12px;align-content:start;min-width:0}
+.chart{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px 12px 12px;display:grid;gap:12px;align-content:start;min-width:0}
 .chart-head{display:grid;gap:4px;padding:0 6px}
 .chart h3{margin:0;font-size:15px;font-weight:600}
 .chart .sub{margin:0;font-size:13px;color:var(--ink-2)}
@@ -247,49 +247,47 @@ button.bar-row:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
 .chart-key i{display:block;width:18px;height:10px;border-radius:0 3px 3px 0;background:var(--ink)}
 .chart-key i.hollow{background:transparent;box-shadow:inset 0 0 0 1.25px var(--muted)}
 .chart-key i.dash{width:0;height:14px;border-radius:0;background:none;border-left:1px dashed var(--ink-2)}
-.assume{display:grid;gap:6px;max-width:78ch;font-size:13.5px;color:var(--ink-2)}
-.assume h3{margin:0;font-size:12px;font-family:var(--font-data);letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:500}
-.assume ul{margin:0;padding-left:18px;display:grid;gap:4px}
-@media (max-width:480px){.chart-axis,.bar-row{grid-template-columns:70px minmax(0,1fr) 74px;column-gap:8px}.formula{font-size:14px}}
+@media (max-width:480px){.chart-axis,.bar-row{grid-template-columns:70px minmax(0,1fr) 74px;column-gap:8px}.page{gap:16px}}
 
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
 <body>
 <div class="page" id="page">
-  <header>
-    <div class="eyebrow">ABO and RhD · donor to recipient</div>
-    <h1>Blood type math</h1>
-    <p class="lede">Who can give blood to whom, how common each type is, and which donations go furthest. In the compatibility matrix, rows are donors and columns are recipients. Every type label carries its share of the population, and the outer edges add up how many people each donor can reach and how large each recipient’s donor pool is. Below the grid, a model scores which donations go furthest.</p>
-  </header>
-
-  <div class="controls">
-    <div class="field">
-      <span class="field-label" id="mode-label">Component</span>
-      <div class="seg" role="group" aria-labelledby="mode-label">
-        <button type="button" id="mode-red" data-mode="red">Red cells</button>
-        <button type="button" id="mode-plasma" data-mode="plasma">Plasma</button>
+  <div class="top">
+    <header>
+      <h1>Blood type math</h1>
+      <p class="lede">Who can give blood to whom, how common each type is, and which donations go furthest.</p>
+    </header>
+    <div class="controls">
+      <div class="field">
+        <span class="field-label" id="mode-label">Component</span>
+        <div class="seg" role="group" aria-labelledby="mode-label">
+          <button type="button" id="mode-red" data-mode="red">Red cells</button>
+          <button type="button" id="mode-plasma" data-mode="plasma">Plasma</button>
+        </div>
       </div>
-    </div>
-    <div class="field">
-      <label class="field-label" for="region">Population</label>
-      <select id="region"></select>
-    </div>
-    <div class="field">
-      <label class="field-label" for="mine">Your type</label>
-      <select id="mine"></select>
+      <div class="field">
+        <label class="field-label" for="region">Population</label>
+        <select id="region"></select>
+      </div>
+      <div class="field">
+        <label class="field-label" for="mine">Your type</label>
+        <select id="mine"></select>
+      </div>
     </div>
   </div>
 
-  <p class="mode-note" id="mode-note"></p>
-
-  <ul class="legend" aria-label="Legend">
-    <li><span class="lg-tile ok" id="lg-ok"></span>Compatible</li>
-    <li><span class="lg-tile no" id="lg-no"></span>Not compatible</li>
-    <li><span class="pair-chips"><span class="chip on">A</span><span class="chip">B</span></span>Antigen on red cells, filled when present</li>
-    <li class="plasma-only"><span class="pair-chips"><span class="chip sq">A</span><span class="chip sq on">B</span></span>Antibody in the donor’s plasma (rows)</li>
-    <li><span class="lg-bar"></span>Share of the population</li>
-  </ul>
+  <div class="strip">
+    <p class="mode-note" id="mode-note"></p>
+    <ul class="legend" aria-label="Legend">
+      <li><span class="lg-tile ok" id="lg-ok"></span>Compatible</li>
+      <li><span class="lg-tile no" id="lg-no"></span>Not compatible</li>
+      <li><span class="pair-chips"><span class="chip on">A</span><span class="chip">B</span></span>Antigen present</li>
+      <li class="plasma-only"><span class="pair-chips"><span class="chip sq">A</span><span class="chip sq on">B</span></span>Antibody in donor plasma</li>
+      <li><span class="lg-bar"></span>Population share</li>
+    </ul>
+  </div>
 
   <div class="workspace">
     <div class="matrix-scroll">
@@ -300,77 +298,69 @@ button.bar-row:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
 
   <section class="model" id="value" aria-labelledby="value-h">
     <div class="model-head">
-      <div class="eyebrow" id="model-eyebrow">Model</div>
       <h2 id="value-h">Which donations go furthest?</h2>
-      <p class="model-lede">A donation goes further when it can reach patients who have few other donors to rely on. Counting how many people a type can give to overrates common pairings, because a group like A+ can already take blood from most of the population, so the model weighs each patient group by how hard it is to supply. Hospitals give most patients their own type, and the slider sets how much.</p>
+      <p class="model-result" id="model-result"></p>
     </div>
-
-    <div class="steps">
-      <div class="step">
-        <span class="step-n">Step 1 · Pressure on each patient group</span>
-        <div class="formula"><var>P</var><sub>j</sub> = <var>p</var><sub>j</sub> ÷ Pool<sub>j</sub></div>
-        <p>The share of people with type <var>j</var>, divided by the share who can donate to them. At 1.0, every compatible donor is needed just to cover that group. Small values mean donors to spare.</p>
-      </div>
-      <div class="step">
-        <span class="step-n">Step 2 · Load on one donor</span>
-        <div class="formula"><var>V</var><sub>i</sub> = <var>θ</var> + (1 − <var>θ</var>) · Σ<sub>j ∈ reach(i)</sub> <var>P</var><sub>j</sub></div>
-        <p><var>θ</var> is the share of each group’s need met with same-type blood, set below. The rest is split evenly across everyone who can donate to that group, so the sum adds up the pressure on every group type <var>i</var> can give to. <var>V</var> averages exactly 1.0 across the population, so 2.0 means twice the load of the average donor.</p>
-      </div>
-    </div>
-
-    <div class="theta">
-      <div class="theta-head">
-        <label for="theta">Same-type first</label>
-        <output id="theta-out" for="theta">70%</output>
-      </div>
-      <div class="theta-track">
-        <span class="theta-mark" style="--at:70%" aria-hidden="true">England ≈ 70%</span>
-        <input type="range" id="theta" min="0" max="100" step="5" value="70" aria-describedby="theta-note">
-      </div>
-      <div class="theta-scale" aria-hidden="true"><span>Any compatible unit</span><span>Own type only</span></div>
-      <p id="theta-note"></p>
-      <p>About 70% reproduces England’s figures for O−: 7.8% of hospital patients but 13% of red-cell stock, with 41% of O− units going to patients who aren’t O− (<a href="https://nhsbtdbe.blob.core.windows.net/umbraco-assets-corp/17159/o-neg-survey-2018-final2.pdf" target="_blank" rel="noopener">NHSBT 2018 audit</a>). There’s no comparable data for other countries or for plasma, so treat it as a rough setting.</p>
-    </div>
-
-    <p class="model-result" id="model-result"></p>
 
     <div class="model-charts">
       <div class="chart rank" id="rank-chart">
         <div class="chart-head">
-          <h3>Load per donor, ranked</h3>
-          <p class="sub">One donor of each type, relative to the average donor. Select a type to see where its score comes from.</p>
+          <h3>Load per donor</h3>
+          <p class="sub">1.0 is the average donor. Tap a type to break it down.</p>
         </div>
-        <div class="chart-axis" id="rank-axis"><span></span><span class="ax"><span>Average = 1.0</span></span><span></span></div>
+        <div class="theta">
+          <div class="theta-head">
+            <label for="theta">Same-type first</label>
+            <output id="theta-out" for="theta">70%</output>
+          </div>
+          <div class="theta-track">
+            <span class="theta-mark" style="--at:70%" aria-hidden="true">England ≈ 70%</span>
+            <input type="range" id="theta" min="0" max="100" step="5" value="70" aria-describedby="theta-help">
+          </div>
+          <div class="theta-scale" aria-hidden="true"><span>Any compatible</span><span>Own type only</span></div>
+        </div>
+        <div class="chart-axis" id="rank-axis"><span></span><span class="ax"><span>Average</span></span><span></span></div>
         <div class="bars" id="m-rank"></div>
       </div>
       <div class="chart press">
         <div class="chart-head">
           <h3 id="press-h">Where the score comes from</h3>
-          <p class="sub" id="press-sub"></p>
+          <p class="sub">Patients ÷ people who can donate to them, per group.</p>
         </div>
-        <div class="chart-key"><span><i></i>Counted in the score</span><span><i class="hollow"></i><span id="key-out">Not counted</span></span></div>
+        <div class="chart-key"><span><i></i>Counted</span><span><i class="hollow"></i><span id="key-out">Can’t receive</span></span></div>
         <div class="bars" id="m-press"></div>
+        <p class="calc" id="press-calc"></p>
       </div>
     </div>
+  </section>
 
-    <div class="assume">
-      <h3>What the model assumes</h3>
+  <footer class="details" id="method">
+    <section aria-labelledby="d-score">
+      <h2 id="d-score">How the score works</h2>
+      <p>Pressure on a patient group is <code>P = patients ÷ people who can donate to them</code>. At 1.0 every compatible donor is needed for that group alone.</p>
+      <p>A donor’s score is <code>θ + (1 − θ) × ΣP</code> over the groups it can give to, where <code>θ</code> is the same-type share. Scores average exactly 1.0 across the population, so 2.0 means twice the average donor’s load. Counting reach alone would overrate common pairings: A+ patients can already take blood from most people.</p>
+    </section>
+    <section aria-labelledby="d-theta">
+      <h2 id="d-theta">Same-type first</h2>
+      <p id="theta-help">The share of each group’s need met with the patient’s own type; the rest is shared across compatible donors. 0% is fully flexible, 100% gives every type exactly 1.0.</p>
+      <p>About 70% reproduces England’s O− figures: 7.8% of hospital patients, 13% of red-cell stock, and 41% of O− units given to patients who aren’t O− (<a href="https://nhsbtdbe.blob.core.windows.net/umbraco-assets-corp/17159/o-neg-survey-2018-final2.pdf" target="_blank" rel="noopener">NHSBT 2018 audit</a>). No comparable data exists here for other countries or for plasma.</p>
+    </section>
+    <section aria-labelledby="d-assume">
+      <h2 id="d-assume">Assumptions</h2>
       <ul>
-        <li>Patients and donors are spread like the general population, and everyone donates at the same rate. In reality patients skew older, and donor pools differ by age and ethnicity.</li>
-        <li>One same-type share applies to every group, and the rest is spread evenly across compatible donors. Real substitution is lopsided: mostly O− in emergencies before a patient is typed, units about to expire, and patients with special requirements. O−’s score at about 70% is anchored to data; the other types’ scores are rougher.</li>
-        <li>Only ABO and RhD count, and every unit is worth the same. Plasma ignores RhD, so negative and positive types score the same for plasma. Much donated plasma is made into medicines, where blood type doesn’t matter, so the plasma view only applies to plasma used directly in transfusions.</li>
+        <li>Patients and donors are spread like the population and everyone donates equally. Real patients skew older, and donor pools differ.</li>
+        <li>The shared part is spread evenly. In reality it’s mostly O− (emergencies, expiring units, special requirements), so only O−’s score is anchored to data.</li>
+        <li>Much plasma becomes medicines, where type doesn’t matter. The plasma view covers transfusion plasma only.</li>
+        <li>ABO and RhD only. Hospitals still crossmatch every unit, and other antigen systems matter for some patients.</li>
       </ul>
-    </div>
-  </section>
-
-  <section class="notes" aria-labelledby="notes-h">
-    <h2 id="notes-h">About the numbers</h2>
-    <p>Compatibility here covers ABO and RhD only. Hospitals still type and crossmatch every unit, and other antigen systems (Kell, Duffy, Kidd and more) matter for some patients. Plasma is matched on ABO alone.</p>
-    <p>Country figures come from national blood services as compiled in <a href="https://en.wikipedia.org/wiki/Blood_type_distribution_by_country" target="_blank" rel="noopener">Blood type distribution by country</a> on Wikipedia. Many are measured on donor populations rather than whole countries. Rows the source doesn’t total to 100% (the UK’s sums to 96%) are rescaled. Portugal’s figures trace to the Portuguese Blood and Transplantation Institute (IPST) and assume RhD is independent of ABO.</p>
-    <p id="world-note"></p>
-  </section>
-
-  <footer class="foot">Made by d-leitao. <a href="https://github.com/d-leitao/blood-type-math">Code, data and model on GitHub</a>.</footer>
+    </section>
+    <section aria-labelledby="d-data">
+      <h2 id="d-data">Data</h2>
+      <p>Country shares from national blood services, compiled in Wikipedia’s <a href="https://en.wikipedia.org/wiki/Blood_type_distribution_by_country" target="_blank" rel="noopener">Blood type distribution by country</a>; many come from donor populations. Rows are rescaled to 100%. Portugal’s figures trace to IPST.</p>
+      <p id="world-note"></p>
+    </section>
+    <p class="foot">Made by d-leitao · <a href="https://github.com/d-leitao/blood-type-math">Code, data and model on GitHub</a></p>
+  </footer>
 </div>
 
 <script type="module">
@@ -414,8 +404,8 @@ let hover = null;
 document.getElementById('lg-ok').innerHTML = CHECK;
 document.getElementById('lg-no').innerHTML = CROSS;
 document.getElementById('world-note').textContent =
-  'World is a population-weighted average of the ' + D.meta.n + ' countries with complete ABO and RhD figures (about ' + D.meta.popbn +
-  ' billion people), calculated for this page. Wikipedia’s own world row is flagged as unreliable, and the often-quoted global split (O+ 42%, B+ 15%) under-weights South and East Asia, where B is far more common.';
+  'World is a population-weighted average of the ' + D.meta.n + ' countries with complete figures (about ' + D.meta.popbn +
+  ' billion people). Wikipedia’s own world row is flagged as unreliable, and the common global split (O+ 42%, B+ 15%) under-weights Asia, where B is more common.';
 
 /* population select */
 const sel = document.getElementById('region');
@@ -461,7 +451,7 @@ const colH = T.map((t, j) => {
 M.appendChild(mk('div', 'edge-h reach-h', '<strong>Reach</strong><span>people who can receive</span>'));
 const rowH = [], cells = [], reachC = [];
 T.forEach((t, i) => {
-  const b = mk('button', 'rh', `<span class="rh-id"><span class="tl">${t.l}</span><span class="chips" aria-hidden="true"></span><span class="me" hidden>You</span></span><span class="rh-val"><span class="rh-bar"><span class="fill"></span></span><span class="num"></span></span>`);
+  const b = mk('button', 'rh', `<span class="rh-id"><span class="tl">${t.l}</span><span class="chips" aria-hidden="true"></span></span><span class="rh-val"><span class="rh-bar"><span class="fill"></span></span><span class="num"></span></span>`);
   b.type = 'button'; b.dataset.t = i; M.appendChild(b); rowH.push(b);
   cells[i] = T.map((u, j) => { const c = mk('button', 'c'); c.type = 'button'; c.dataset.d = i; c.dataset.r = j; M.appendChild(c); return c; });
   const e = mk('div', 'edge reach', '<span class="num"></span><span class="track"><span class="fill"></span></span>');
@@ -521,24 +511,13 @@ MR.addEventListener('click', e => { const t = rankOf(e); if (t) { pin = t; hover
 
 function renderModel(m, p, plasma, f){
   const comp = plasma ? 'plasma' : 'red cells';
-  const place = region === 'World' ? 'World' : region;
-  document.getElementById('model-eyebrow').textContent = `Model · ${plasma ? 'Plasma' : 'Red cells'} · ${place}`;
   document.getElementById('theta-out').textContent = theta + '%';
-  document.getElementById('theta-note').textContent = theta === 0
-    ? 'At 0%, any compatible unit can go to any patient. This is the most flexible case and an upper bound on how much universal donors stand out.'
-    : theta === 100
-      ? 'At 100%, every patient gets their own type, so every donor carries exactly the average load.'
-      : `${theta}% of each group’s need is met with same-type blood, and the other ${100 - theta}% is shared across compatible donors.`;
 
   const topV = m.V[m.order[0]], tops = m.order.filter(i => Math.abs(m.V[i] - topV) < 1e-9);
   const lead = theta === 100
-    ? 'With every patient getting their own type, every donor carries exactly the average load.'
-    : `<strong>${joinAnd(tops.map(i => T[i].l))}</strong> ${plasma ? 'plasma' : 'red-cell'} donations go furthest ${where(region)}, at ${fmtV(topV)}× the average donor.`;
-  const mine = theta === 100 ? '' : me < 0
-    ? ' Set your type above to see where you rank.'
-    : tops.includes(me)
-      ? (tops.length > 1 ? ' That includes your type.' : ' That’s your type.')
-      : ` Your type, ${T[me].l}, scores ${fmtV(m.V[me])}×, ${ord(m.rank[me])} of 8.`;
+    ? 'At 100% same-type, every donor carries the average load.'
+    : `<strong>${joinAnd(tops.map(i => T[i].l))}</strong> ${plasma ? 'plasma' : 'red-cell'} donations go furthest ${where(region)}: ${fmtV(topV)}× the average donor.`;
+  const mine = theta === 100 || me < 0 || tops.includes(me) ? '' : ` Yours, ${T[me].l}: ${fmtV(m.V[me])}×, ${ord(m.rank[me])} of 8.`;
   document.getElementById('model-result').innerHTML = lead + mine;
 
   const maxV = Math.max(...m.V) * 1.06 || 1, avg = 100 / maxV;
@@ -553,12 +532,12 @@ function renderModel(m, p, plasma, f){
     r.setAttribute('aria-label', `${T[i].l}${i === me ? ' (your type)' : ''}: ${fmtV(m.V[i])} times the average donor, ${ord(m.rank[i])} of 8. Show breakdown.`);
   });
 
-  const d = T[f], reach = T.filter(u => ok(plasma, d, u));
+  const d = T[f];
   document.getElementById('press-h').textContent = `Where ${d.l}’s score comes from`;
-  document.getElementById('key-out').textContent = `Can’t receive ${comp} from ${d.l}`;
-  document.getElementById('press-sub').textContent =
-    `Pressure on each patient group, patients ÷ people who can donate ${comp} to them. ${d.l} can give to ${reach.length === 8 ? 'all 8 groups' : reach.length + ' group' + (reach.length > 1 ? 's' : '')}, and their bars add up to ${fmt3(m.S[f])}.` +
-    (theta === 0 ? ' That sum is its score.' : ` With ${theta}% same-type, its score is ${(theta / 100).toFixed(2)} + ${(1 - theta / 100).toFixed(2)} × ${fmt3(m.S[f])} = ${fmtV(m.V[f])}.`);
+  document.getElementById('key-out').textContent = `Can’t receive from ${d.l}`;
+  document.getElementById('press-calc').innerHTML = theta === 0
+    ? `Score = ΣP = <strong>${fmtV(m.V[f])}</strong>`
+    : `Score = ${(theta / 100).toFixed(2)} + ${(1 - theta / 100).toFixed(2)} × ${fmt3(m.S[f])} = <strong>${fmtV(m.V[f])}</strong>`;
   const maxP = Math.max(...m.P) || 1;
   T.forEach((u, j) => {
     const r = pressRows[j], inn = ok(plasma, d, u);
@@ -631,10 +610,10 @@ function renderPanel(a, p, plasma, m){
       <div class="p-head"><span class="p-type">${t.l}</span><div><div class="p-pct">${fmt(p[i])}%</div><p class="p-sub">of people ${where(region)}, ${rankTxt(p, i)}</p></div></div>
       ${tags.length || i === me ? `<div class="tags">${i === me ? '<span class="tag me-tag">Your type</span>' : ''}${tags.map(x => `<span class="tag">${x}</span>`).join('')}</div>` : ''}
       <p class="p-bio">${bio(t)}</p>
-      <table class="p-table"><thead><tr><th scope="col"><span class="sr"></span></th><th scope="col">Gives to</th><th scope="col">Receives from</th></tr></thead>
+      <table class="p-table"><thead><tr><th scope="col"><span class="sr"></span></th><th scope="col">Gives to</th><th scope="col">Gets from</th></tr></thead>
       <tbody>${row('Red cells', s1, !plasma)}${row('Plasma', s2, plasma)}</tbody></table>
-      <p class="p-value">Load per ${plasma ? 'plasma' : 'red-cell'} donor at ${theta}% same-type: <strong>${fmtV(m.V[i])}×</strong> the average, ${theta === 100 ? 'the same as every type' : ord(m.rank[i]) + ' of 8'}. <button type="button" class="linkbtn" data-jump>How it’s scored</button></p>
-      <p class="hint">Percentages are the share of people ${where(region)} on the other side of the match. Hover or tap a square to check one pairing.</p>`;
+      <p class="p-value">Load per donor: <strong>${fmtV(m.V[i])}×</strong> average${theta === 100 ? '' : ', ' + ord(m.rank[i]) + ' of 8'}. <button type="button" class="linkbtn" data-jump>See model</button></p>
+      <p class="hint">% = share of people on the other side. Tap a square for one pairing.</p>`;
   } else {
     const i = a.d, j = a.r, d = T[i], r = T[j], k = ok(plasma, d, r);
     const share = i === j
@@ -659,8 +638,8 @@ function update(){
   document.getElementById('page').classList.toggle('is-plasma', plasma);
   document.querySelectorAll('.seg button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mode === mode)));
   document.getElementById('mode-note').innerHTML = plasma
-    ? '<strong>Plasma runs the other way.</strong> The donor’s antibodies must not match any antigen on the recipient’s cells, so AB plasma suits everyone and O plasma suits only O. RhD isn’t matched.'
-    : '<strong>Red-cell rule.</strong> The donor’s cells must carry no antigen the recipient lacks, so O− suits everyone and AB+ can take from anyone.';
+    ? '<strong>Plasma</strong> runs the other way: donor antibodies can’t meet the recipient’s antigens.'
+    : '<strong>Red cells:</strong> the donor’s cells can’t carry an antigen the recipient lacks.';
 
   T.forEach((t, j) => {
     const h = colH[j];
@@ -697,7 +676,6 @@ function update(){
     e.classList.toggle('hl', j === hc);
   });
   colH.forEach((h, j) => { h.querySelector('.me').hidden = j !== me; });
-  rowH.forEach((h, i) => { h.querySelector('.me').hidden = i !== me; });
   rankRows.forEach((r, i) => { r.querySelector('.me').hidden = i !== me; });
   M.classList.add('focusing');
   const m = model(p, plasma);
