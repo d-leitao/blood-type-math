@@ -644,7 +644,8 @@ function renderModel(m, p, plasma, f, gt){
 
   const d = T[b];
   document.getElementById('press-h').textContent = `Where ${d.l}’s ${fmtV(m.V[b])} comes from`;
-  document.getElementById('press-sub').textContent = `Each row: the share of all ${comp} that would go from ${d.l} donors to that patient group, ÷ ${d.l}’s ${fmt(p[b])}% share of people.`;
+  const f2 = v => v >= 10 ? v.toFixed(1) : String(+v.toPrecision(3)), fp = v => String(+v.toFixed(2));  // enough digits for each division to check out
+  document.getElementById('press-sub').textContent = `Each row: the share of all ${comp} that would go from ${d.l} donors to that patient group, ÷ ${d.l}’s ${f2(p[b])}% share of people.`;
   const th = theta / 100, keep = 1 - m.e, own = keep * th, rest = keep * (1 - th), em = m.U.includes(b) ? m.eL : 0;
   const big = v => v >= 0.005, pc = v => (v * 100).toFixed(1).replace(/\.0$/, '') + '%';
   // what each patient group takes from this donor type, split by who receives it (not by how they were matched):
@@ -679,7 +680,7 @@ function renderModel(m, p, plasma, f, gt){
     r.querySelector('.sh').style.width = j === b ? '0%' : w(c.v);
     r.querySelector('.own').classList.toggle('end', true);
     r.querySelector('.v1').textContent = !c.can ? '—' : shown[j] === 0 && c.v > 0 ? '<0.01' : shown[j].toFixed(2);
-    r.querySelector('.v2').textContent = c.can ? `${fmt(c.v * p[b])}% ÷ ${fmt(p[b])}%` : '';
+    r.querySelector('.v2').textContent = c.can ? `${f2(c.v * p[b])}% ÷ ${fp(p[b])}%` : '';
     const why = `${u.l} patients are ${fmt(p[j])}% of people ${where(region)}, and ${fmt(m.pool[j])}% of people can give them ${comp}.`;
     r.title = c.can ? why : `${u.l} patients can’t receive ${comp} from ${d.l}.`;
     r.setAttribute('aria-label', c.can ? `${u.l} patients add ${shown[j].toFixed(2)} to ${d.l}’s score. ${why}` : `${u.l} patients can’t receive from ${d.l}.`);
@@ -687,7 +688,7 @@ function renderModel(m, p, plasma, f, gt){
   emRow.hidden = !(em > 0);
   emRow.querySelector('.em').style.width = w(em);
   emRow.querySelector('.v1').textContent = shown[8].toFixed(2);
-  emRow.querySelector('.v2').textContent = `${fmt(em * p[b])}% ÷ ${fmt(p[b])}%`;
+  emRow.querySelector('.v2').textContent = `${f2(em * p[b])}% ÷ ${fp(p[b])}%`;
   emRow.title = `Blood given before the patient’s type is known. Only ${plasma ? 'AB plasma' : 'O− red cells'} is safe for anyone.`;
 }
 
