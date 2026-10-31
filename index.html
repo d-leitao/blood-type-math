@@ -271,6 +271,7 @@ button.bar-row:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
 .press .bar-row.out .tl,.press .bar-row.out .bv{color:var(--muted)}
 .press .em-l{font-size:12.5px;font-weight:600;color:var(--ink)}
 .chart-axis .r{text-align:right}
+.chart-axis .wide{grid-column:2/4}
 .bar-row[hidden]{display:none}
 .press .bar-row{cursor:default}
 .press .bar-row.explained{background:var(--empty)}
@@ -349,7 +350,7 @@ button.bar-row:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
           <h3 id="press-h">Where the score comes from</h3>
           <p class="sub" id="press-sub">How much each patient group adds to the score. Groups few people can give to add more.</p>
         </div>
-        <div class="chart-axis"><span>Patients</span><span></span><span class="r">Per 100</span></div>
+        <div class="chart-axis"><span>Patients</span><span class="r wide" id="press-unit">Needed per 100 units given</span></div>
         <div class="bars" id="m-press"></div>
         <p class="calc" id="press-calc"></p>
         <p class="calc-note" id="press-note"></p>
@@ -680,6 +681,7 @@ function renderModel(m, p, plasma, f, gt){
 
   const d = T[b];
   document.getElementById('press-h').textContent = `Where ${d.l}’s ${fmtV(m.V[b])} comes from`;
+  document.getElementById('press-unit').textContent = `Needed per 100 ${d.l} units given`;
   document.getElementById('press-sub').textContent = `For every 100 units ${d.l} donors give, how many each patient group would need. A group needs more ${d.l} when it’s large, and when ${d.l} is a big share of the blood it can take. ${matchMedia('(hover: hover)').matches ? 'Hover' : 'Tap'} a row for its numbers.`;
   const th = theta / 100, keep = 1 - m.e, own = keep * th, rest = keep * (1 - th), em = m.U.includes(b) ? m.eL : 0;
   const big = v => v >= 0.005, pc = v => (v * 100).toFixed(1).replace(/\.0$/, '') + '%';
