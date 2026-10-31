@@ -237,7 +237,7 @@ button.ch,button.rh,button.c{appearance:none;border:0;font:inherit;color:inherit
 .est:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
 .calc{margin:0;padding:4px 6px 0;font-size:14px;color:var(--ink-2);font-variant-numeric:tabular-nums}
 .calc strong{color:var(--ink);font-weight:500}
-.calc-note{margin:-6px 0 0;padding:0 6px;font-size:12.5px;line-height:1.5;color:var(--muted)}
+.calc-note{margin:-4px 0 0;padding:8px 10px;font-size:13px;line-height:1.5;color:var(--ink-2);background:var(--empty);border-radius:8px}
 .model-charts{display:grid;gap:20px;grid-template-columns:minmax(0,1fr)}
 @media (min-width:900px){.model-charts{grid-template-columns:1fr 1fr}}
 .chart{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px 12px 12px;display:grid;gap:12px;align-content:start;min-width:0}
@@ -272,6 +272,9 @@ button.bar-row:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
 .press .em-l{font-size:12.5px;font-weight:600;color:var(--ink)}
 .chart-axis .r{text-align:right}
 .bar-row[hidden]{display:none}
+.press .bar-row{cursor:default}
+.press .bar-row.explained{background:var(--empty)}
+.press .bar-row:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
 .chart-key{display:flex;flex-wrap:wrap;gap:6px 18px;padding:0 6px;font-size:12px;color:var(--ink-2)}
 .chart-key span{display:flex;align-items:center;gap:7px}
 .chart-key i{display:block;width:18px;height:10px;border-radius:0 3px 3px 0;background:var(--ink)}
@@ -596,6 +599,39 @@ const pressRows = T.map(t => {
 });
 const emRow = mk('div', 'bar-row', '<span class="bl"><span class="em-l">Emergencies</span></span><span class="bt"><span class="bf em"></span></span><span class="bv"><span class="v1"></span></span>');
 MP.appendChild(emRow);
+[...pressRows, emRow].forEach((r, k) => { r.dataset.k = k; r.tabIndex = 0; });
+let prow = null, pressCtx = null;  // the breakdown row being explained, if pinned by a tap
+const rowOf = e => { const r = e.target.closest('#m-press .bar-row'); return r ? +r.dataset.k : null; };
+MP.addEventListener('pointerover', e => { if (e.pointerType !== 'touch') { const k = rowOf(e); if (k != null) explain(k); } });
+MP.addEventListener('pointerleave', e => { if (e.pointerType !== 'touch') explain(prow); });
+MP.addEventListener('click', e => { const k = rowOf(e); if (k == null) return; prow = prow === k ? null : k; explain(prow); });
+MP.addEventListener('focusin', e => { const k = rowOf(e); if (k != null) explain(k); });
+MP.addEventListener('focusout', e => { if (!MP.contains(e.relatedTarget)) explain(prow); });
+// one row, in words: where its number comes from
+function explain(k){
+  const c = pressCtx; if (!c) return;
+  const {d, b, p, m, rest, comp, plasma} = c;
+  const pc = v => (v * 100).toFixed(1).replace(/\.0$/, '') + '%', n = v => Math.round(v * 100);
+  const uName = plasma ? 'AB' : 'O−', uP = m.U.reduce((a, i) => a + p[i], 0);
+  if (k == null) k = b;
+  let t;
+  if (k === 8) {
+    t = `Emergencies: ${pc(m.e)} of all ${comp} ${plasma ? 'is' : 'are'} given before the patient’s type is known, all ${uName}. ${uName} is ${fmt(uP)}% of people, so that’s ${(m.e * 100).toFixed(2)} ÷ ${fmt(uP)} ≈ ${m.eL.toFixed(2)}: ${n(m.eL)} for every 100 ${d.l} units.`;
+  } else if (!ok(plasma, d, T[k])) {
+    t = `${T[k].l} patients can’t receive ${d.l} ${comp}.`;
+  } else if (k === b) {
+    const P = m.P[b], uni = m.U.includes(b), mid = theta >= 100 ? `all get ${d.l}` : theta > 0
+      ? `${theta}% get ${d.l} on purpose and ${100 - theta}% get any compatible blood, ${pc(P)} of which is ${d.l}`
+      : `all get any compatible blood, ${pc(P)} of which is ${d.l}`;
+    const emTxt = m.e > 0 ? ` ${pc(m.e)} are emergencies${uni ? ' (counted below)' : ` and get ${uName}`}. Of the rest,` : '';
+    t = `${d.l} patients: as many as ${d.l} donors.${emTxt}${emTxt ? ' ' + mid : ' ' + mid[0].toUpperCase() + mid.slice(1)}. That’s ${n(c.rows[b].v)} for every 100 ${d.l} units.`;
+  } else {
+    const ratio = p[k] / p[b], slice = p[b] / m.pool[k];
+    t = `${T[k].l} patients: ${ratio.toFixed(1)}× as many as ${d.l} donors. ${pc(rest)} of them get any compatible blood${m.e > 0 && theta < 100 ? ` (${100 - theta}% of those who aren’t emergencies)` : ''}, and ${d.l} is ${pc(slice)} of what they can take. ${ratio.toFixed(1)} × ${pc(rest)} × ${pc(slice)} ≈ ${(c.rows[k].v * 100).toFixed(1).replace(/\.0$/, '')} for every 100 ${d.l} units.`;
+  }
+  document.getElementById('press-note').textContent = t;
+  [...pressRows, emRow].forEach((r, i) => r.classList.toggle('explained', i === k));
+}
 const rankOf = e => { const b = e.target.closest('.bar-row'); return b && MR.contains(b) ? {t: +b.dataset.t} : null; };
 MR.addEventListener('click', e => { const t = rankOf(e); if (t) toggle(t); });
 previewOn(MR, rankOf);
@@ -644,7 +680,7 @@ function renderModel(m, p, plasma, f, gt){
 
   const d = T[b];
   document.getElementById('press-h').textContent = `Where ${d.l}’s ${fmtV(m.V[b])} comes from`;
-  document.getElementById('press-sub').textContent = `For every 100 units ${d.l} donors give, how many each patient group would need, if every type gives equally often.`;
+  document.getElementById('press-sub').textContent = `For every 100 units ${d.l} donors give, how many each patient group would need, if every type gives equally often. Tap a row to see why.`;
   const th = theta / 100, keep = 1 - m.e, own = keep * th, rest = keep * (1 - th), em = m.U.includes(b) ? m.eL : 0;
   const big = v => v >= 0.005, pc = v => (v * 100).toFixed(1).replace(/\.0$/, '') + '%';
   // what each patient group takes from this donor type, split by who receives it (not by how they were matched):
@@ -663,16 +699,8 @@ function renderModel(m, p, plasma, f, gt){
   if (u100(emS)) parts.push(`${u100(emS)} for emergencies`);
   const list = parts.length > 1 ? `: ${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}` : parts.length ? `, all ${parts[0].replace(/^\d+ /, '')}` : '';
   document.getElementById('press-calc').innerHTML = `For every 100 units ${d.l} donors give, patients need <strong>${total}</strong>${list}. So ${d.l} donors would ${total < 100 ? 'only ' : ''}need to give <strong>${fmtV(m.V[b])}×</strong> as often as the average donor.`;
-  const notes = [];
-  // the selected group's own patients: matched on purpose, plus those who get it from the compatible pool
-  const P = m.P[b], nOwn = u100(same), outside = m.e > 0 ? ' outside emergencies' : '';
-  const how = theta >= 100 ? `all get ${d.l}` : theta > 0
-    ? `${theta}% get ${d.l} on purpose, and some of the rest get it anyway (${d.l} is ${pc(P)} of the blood they can take)`
-    : `they get any compatible blood, ${pc(P)} of which is ${d.l}`;
-  notes.push(`${d.l} patients: ${how}, so ${nOwn} in 100 get ${d.l}${outside}. There are as many ${d.l} patients as ${d.l} donors, so that’s ${nOwn} of every 100 units.`);
-  if (big(other)) notes.push(`Other patients get ${d.l} as part of their compatible blood; the fewer people can give to a group, the more it adds.`);
-  if (big(em)) notes.push(`${pc(m.e)} of all ${comp} ${plasma ? 'goes' : 'go'} to emergencies, all ${m.U.length > 1 ? 'AB' : 'O−'}: ${u100(emS)} for every 100 units.`);
-  document.getElementById('press-note').textContent = notes.join(' ');
+  if (!pressCtx || pressCtx.b !== b || pressCtx.plasma !== plasma) prow = null;  // a new type: back to its own patients
+  pressCtx = {d, b, p, m, rest, comp, plasma, rows};
   const maxC = Math.max(em, ...rows.map(r => r.v)) || 1, w = v => (v / maxC * 100).toFixed(2) + '%';
   T.forEach((u, j) => {
     const r = pressRows[j], c = rows[j];
@@ -689,6 +717,7 @@ function renderModel(m, p, plasma, f, gt){
   emRow.querySelector('.em').style.width = w(em);
   emRow.querySelector('.v1').textContent = String(u100(shown[8]));
   emRow.title = `Blood given before the patient’s type is known. Only ${plasma ? 'AB plasma' : 'O− red cells'} is safe for anyone.`;
+  explain(prow);
 }
 
 function summary(plasma, i, p){
