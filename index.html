@@ -218,19 +218,17 @@ button.ch,button.rh,button.c{appearance:none;border:0;font:inherit;color:inherit
 .model-lede{margin:0;color:var(--ink-2)}
 .model-result{margin:0;font-size:17px;text-wrap:pretty}
 .model-result strong{font-family:var(--font-display);font-weight:800;font-stretch:112%}
-.assume{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px 28px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px 18px 16px}
-.assume-h{grid-column:1/-1;margin:0;font-family:var(--font-data);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
-.field-n{display:grid;gap:8px;align-content:start}
-.field-n label{font-weight:500;font-size:13.5px;color:var(--ink-2)}
-.field-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
-.stepper{display:inline-flex;align-items:stretch;height:40px;border:1px solid var(--line);border-radius:10px;background:var(--bg);overflow:hidden}
+.assume{margin:0;font-size:15px;line-height:2.5;color:var(--ink-2);text-wrap:pretty}
+.stepper{display:inline-flex;align-items:stretch;height:32px;vertical-align:middle;margin:0 2px;border:1px solid var(--line);border-radius:8px;background:var(--surface);overflow:hidden;white-space:nowrap;line-height:1}
 .stepper:focus-within{border-color:var(--ink)}
-.step{appearance:none;border:0;background:transparent;width:40px;padding:0;font:inherit;font-size:19px;line-height:1;color:var(--ink);cursor:pointer;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+.step{appearance:none;border:0;background:transparent;width:30px;padding:0;font:inherit;font-size:17px;line-height:1;color:var(--ink);cursor:pointer;touch-action:manipulation;user-select:none;-webkit-user-select:none}
 .step:hover:not(:disabled){background:var(--empty)}
 .step:disabled{color:var(--muted);opacity:.5;cursor:default}
 .step:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
+#assume-note{color:var(--muted)}
+.assume .est{font-size:inherit}
 .num-in{display:inline-flex;align-items:center;gap:2px;padding:0 4px;font-family:var(--font-data);font-size:15px;color:var(--ink-2);border-left:1px solid var(--line);border-right:1px solid var(--line)}
-.num-in input{width:2.6em;border:0;background:transparent;font-family:var(--font-data);font-size:16px;font-variant-numeric:tabular-nums;color:var(--ink);padding:0;text-align:right;-moz-appearance:textfield;appearance:textfield}
+.num-in input{width:2.2em;border:0;background:transparent;font-family:var(--font-data);font-size:16px;font-variant-numeric:tabular-nums;color:var(--ink);padding:0;text-align:right;-moz-appearance:textfield;appearance:textfield}
 .num-in input::-webkit-inner-spin-button,.num-in input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
 .num-in input:focus{outline:none}
 .est{appearance:none;border:0;background:none;padding:0;font:inherit;font-size:12px;color:var(--ink-2);text-decoration:underline;text-decoration-color:var(--muted);text-underline-offset:3px;cursor:pointer}
@@ -326,32 +324,6 @@ button.bar-row:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
       <p class="model-result" id="model-result"></p>
     </div>
 
-    <div class="assume" role="group" aria-labelledby="assume-h">
-      <p class="assume-h" id="assume-h">Assumptions</p>
-      <div class="field-n">
-        <label for="theta">Patients given their own type</label>
-        <div class="field-row">
-          <div class="stepper">
-            <button type="button" class="step" data-for="theta" data-dir="-1" aria-label="Lower own-type share">−</button>
-            <span class="num-in"><input type="number" id="theta" min="0" max="100" step="1" inputmode="numeric" value="80" aria-describedby="theta-help"><span aria-hidden="true">%</span></span>
-            <button type="button" class="step" data-for="theta" data-dir="1" aria-label="Raise own-type share">+</button>
-          </div>
-          <button type="button" class="est" id="theta-est">Best estimate 80%</button>
-        </div>
-      </div>
-      <div class="field-n">
-        <label for="emerg" id="emerg-label">O− units used in emergencies</label>
-        <div class="field-row">
-          <div class="stepper">
-            <button type="button" class="step" data-for="emerg" data-dir="-1" aria-label="Lower emergency share">−</button>
-            <span class="num-in"><input type="number" id="emerg" min="0" max="90" step="1" inputmode="numeric" value="16" aria-describedby="emerg-help"><span aria-hidden="true">%</span></span>
-            <button type="button" class="step" data-for="emerg" data-dir="1" aria-label="Raise emergency share">+</button>
-          </div>
-          <button type="button" class="est" id="emerg-est">Best estimate 16%</button>
-        </div>
-      </div>
-    </div>
-
     <div class="model-charts">
       <div class="chart rank" id="rank-chart">
         <div class="chart-head">
@@ -371,6 +343,8 @@ button.bar-row:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
         <p class="calc" id="press-calc"></p>
       </div>
     </div>
+
+    <p class="assume" id="assume">The charts assume hospitals give <span class="stepper"><button type="button" class="step" data-for="theta" data-dir="-1" aria-label="Lower own-type share">−</button><span class="num-in"><input type="number" id="theta" min="0" max="100" step="1" inputmode="numeric" value="80" aria-label="Share of patients given their own type" aria-describedby="theta-help"><span aria-hidden="true">%</span></span><button type="button" class="step" data-for="theta" data-dir="1" aria-label="Raise own-type share">+</button></span> of patients their own type and use <span class="stepper"><button type="button" class="step" data-for="emerg" data-dir="-1" aria-label="Lower emergency share">−</button><span class="num-in"><input type="number" id="emerg" min="0" max="90" step="1" inputmode="numeric" value="16" aria-label="Share of O− units used in emergencies" aria-describedby="emerg-help"><span aria-hidden="true">%</span></span><button type="button" class="step" data-for="emerg" data-dir="1" aria-label="Raise emergency share">+</button></span> of <span id="emerg-what">O− units</span> in emergencies. <span id="assume-note">These are the best estimates.</span><button type="button" class="est" id="assume-reset" hidden>Back to the best estimates</button></p>
   </section>
 
   <footer class="details" id="method">
@@ -504,7 +478,6 @@ emIn.addEventListener('input', () => { const v = pct(emIn, EMAX); if (v != null)
 // a blank or out-of-range entry snaps back to the last valid value
 thetaIn.addEventListener('change', () => { thetaIn.value = String(theta); });
 emIn.addEventListener('change', () => { emIn.value = String(emerg[mode]); });
-document.getElementById('theta-est').addEventListener('click', () => setTheta(EST.theta));
 const STEP = {theta: 5, emerg: 1};
 const bump = (id, dir) => {
   const v = id === 'theta' ? theta : emerg[mode], max = id === 'theta' ? 100 : EMAX, st = STEP[id];
@@ -525,7 +498,11 @@ document.querySelectorAll('.step').forEach(btn => {
   btn.addEventListener('pointerleave', stopHold);
   btn.addEventListener('click', e => { if (e.detail === 0) bump(btn.dataset.for, +btn.dataset.dir); });  // keyboard
 });
-document.getElementById('emerg-est').addEventListener('click', () => setEmerg(EST[mode]));
+document.getElementById('assume-reset').addEventListener('click', () => {
+  emerg[mode] = EST[mode]; save('btc-emerg-' + mode, String(EST[mode]));
+  setTheta(EST.theta);
+  thetaIn.value = String(theta); emIn.value = String(emerg[mode]);
+});
 
 document.querySelectorAll('.seg button').forEach(b => b.addEventListener('click', () => {
   mode = b.dataset.mode; save('btc-mode', mode); update();
@@ -607,10 +584,12 @@ function renderModel(m, p, plasma, f, gt){
   if (document.activeElement !== thetaIn) thetaIn.value = String(theta);
   if (document.activeElement !== emIn) emIn.value = String(m.em);
   emIn.max = String(EMAX);
-  document.getElementById('emerg-label').textContent = `${plasma ? 'AB' : 'O−'} units used in emergencies`;
-  const est = (id, v, cur) => { const b = document.getElementById(id); b.textContent = `Best estimate ${v}%`; b.disabled = cur === v; };
-  est('theta-est', EST.theta, theta);
-  est('emerg-est', EST[key], m.em);
+  document.getElementById('emerg-what').textContent = plasma ? 'AB plasma' : 'O− units';
+  emIn.setAttribute('aria-label', `Share of ${plasma ? 'AB plasma' : 'O− units'} used in emergencies`);
+  const atEst = theta === EST.theta && m.em === EST[key], reset = document.getElementById('assume-reset');
+  document.getElementById('assume-note').hidden = !atEst;
+  reset.hidden = atEst;
+  reset.textContent = `Back to the best estimates (${EST.theta}% and ${EST[key]}%)`;
   document.querySelectorAll('.step').forEach(b => {
     const v = b.dataset.for === 'theta' ? theta : m.em, max = b.dataset.for === 'theta' ? 100 : EMAX;
     b.disabled = +b.dataset.dir < 0 ? v <= 0 : v >= max;
