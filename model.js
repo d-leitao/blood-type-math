@@ -26,7 +26,7 @@ export function compatible(component, donor, recipient) {
  * Which donations are most needed.
  *
  * p[i] is the share of people with type i, standing in for both donors and patients.
- * sameType (θ, 0..1) is the share of each typed patient group's need met with same-type blood.
+ * sameType (θ, 0..1) is the share of each typed patient group deliberately given same-type blood.
  * emergency (f, 0..<1) is the share of universal donors' blood used in emergencies, before
  * the patient's type is known. Universal donors can give to every type: O− for red cells,
  * AB− and AB+ for plasma.
@@ -44,8 +44,8 @@ export function compatible(component, donor, recipient) {
  * relative to universal donors keeps it bounded where they are rare; a fixed share of all
  * blood would put about 35 times the average load on O− donors in Bhutan.
  *
- * The part of each group's need not met with same-type blood (1 − θ) is split evenly
- * across everyone who can give to that group. value is how often a type's donors would need
+ * The rest of each group's need (1 − θ) is drawn from everyone who can give to that group in
+ * proportion to how many there are, own type included, so more than θ end up with their own type. value is how often a type's donors would need
  * to give to meet demand, against the average donor. Total demand equals total donations, so
  * its population-weighted mean is exactly 1 for any θ and f. θ = 0 is fully flexible matching; θ = 1 with f = 0 gives every type 1.
  */

@@ -354,7 +354,7 @@ button.bar-row:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
       </div>
     </div>
 
-    <p class="assume" id="assume">The charts assume hospitals give <span class="stepper"><button type="button" class="step" data-for="theta" data-dir="-1" aria-label="Lower own-type share">−</button><span class="num-in"><input type="number" id="theta" min="0" max="99" step="1" inputmode="numeric" value="80" aria-label="Share of patients given their own type" aria-describedby="theta-help"><span aria-hidden="true">%</span></span><button type="button" class="step" data-for="theta" data-dir="1" aria-label="Raise own-type share">+</button></span> of patients their own type and use <span class="stepper"><button type="button" class="step" data-for="emerg" data-dir="-1" aria-label="Lower emergency share">−</button><span class="num-in"><input type="number" id="emerg" min="0" max="90" step="1" inputmode="numeric" value="16" aria-label="Share of O− units used in emergencies" aria-describedby="emerg-help"><span aria-hidden="true">%</span></span><button type="button" class="step" data-for="emerg" data-dir="1" aria-label="Raise emergency share">+</button></span> of <span id="emerg-what">O− units</span> in emergencies. <span id="assume-note">These are the best available estimates.</span><button type="button" class="est" id="assume-reset" hidden>Back to the best available estimates</button></p>
+    <p class="assume" id="assume">The charts assume hospitals pick the patient’s own type for <span class="stepper"><button type="button" class="step" data-for="theta" data-dir="-1" aria-label="Lower own-type share">−</button><span class="num-in"><input type="number" id="theta" min="0" max="99" step="1" inputmode="numeric" value="80" aria-label="Share of patients deliberately given their own type" aria-describedby="theta-help"><span aria-hidden="true">%</span></span><button type="button" class="step" data-for="theta" data-dir="1" aria-label="Raise own-type share">+</button></span> of patients and any compatible blood for the rest, and use <span class="stepper"><button type="button" class="step" data-for="emerg" data-dir="-1" aria-label="Lower emergency share">−</button><span class="num-in"><input type="number" id="emerg" min="0" max="90" step="1" inputmode="numeric" value="16" aria-label="Share of O− units used in emergencies" aria-describedby="emerg-help"><span aria-hidden="true">%</span></span><button type="button" class="step" data-for="emerg" data-dir="1" aria-label="Raise emergency share">+</button></span> of <span id="emerg-what">O− units</span> in emergencies. <span id="assume-note">These are the best available estimates.</span><button type="button" class="est" id="assume-reset" hidden>Back to the best available estimates</button></p>
   </section>
 
   <footer class="details" id="method">
@@ -362,15 +362,15 @@ button.bar-row:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
       <h2 id="d-score">How the score works</h2>
       <p>Picture every type’s donors giving equally often. Each type then supplies its share of people: in Portugal, 6.1% of red cells would come from O− donors. Then share out what patients need:</p>
       <ol>
-        <li><strong>Own type.</strong> Most patients get their own type, so their need lands on donors of that type.</li>
+        <li><strong>Own type, on purpose.</strong> Hospitals pick the patient’s own type for most patients, so that need lands on donors of that type.</li>
         <li><strong>Emergencies.</strong> Some blood is given before the patient’s type is known. Only universal donors (O− red cells, AB plasma) are safe, so it all lands on them.</li>
-        <li><strong>Everyone else</strong> gets a compatible type, shared across all compatible donors by how many there are. A group few people can give to weighs more on each of them: its size ÷ everyone who can give to it.</li>
+        <li><strong>Any compatible blood.</strong> The rest get whatever compatible blood there is, in proportion to how much each type donates. That’s often still their own type, so more patients end up with their own type than were matched on purpose: about 92% in Portugal. A group few people can give to weighs more on each of its donors: its size ÷ everyone who can give to it.</li>
       </ol>
       <p>A type’s score is the need that lands on it ÷ what it supplies, which is how often its donors would need to give compared with the average donor. In Portugal at the best estimates, 10.3% of red cells would have to be O−, from 6.1% of people: 1.68×. Total need equals total donations, so the scores average exactly 1.0.</p>
     </section>
     <section aria-labelledby="d-theta">
       <h2 id="d-theta">The two assumptions</h2>
-      <p id="theta-help">Own type: the share of typed patients given their own type; the rest is shared across compatible donors. 0% is fully flexible. At 100% only emergency use separates the types.</p>
+      <p id="theta-help">Own type: the share of patients given their own type on purpose. The rest get any compatible blood, often their own type too, so about 92% of patients in Portugal end up with their own type at 80%. 0% is fully flexible.</p>
       <p id="emerg-help">Emergencies: the share of universal donors’ blood used before the patient’s type is known. It’s a share of their blood, not of all blood, so it stays realistic where they’re rare. A fixed share of all blood would put about 15 times the average load on O− donors in Japan.</p>
       <p>Red cells: in England 16% of O− units went to emergencies, and O− is 7.8% of patients but 13% of red-cell stock (<a href="https://nhsbtdbe.blob.core.windows.net/umbraco-assets-corp/17159/o-neg-survey-2018-final2.pdf" target="_blank" rel="noopener">NHSBT 2018 audit</a>). That implies about 80% own type. With the same emergency share, Australia (9% of people, over 15% of demand; <a href="https://www.lifeblood.com.au/news-and-stories/trending-research/better-management-o-negative-blood-supply" target="_blank" rel="noopener">Lifeblood</a>) and the US (6.8% of donors, 12.1% of transfusions in 2023; <a href="https://www.aabb.org/docs/default-source/default-document-library/resources/association-bulletins/ab19-02.pdf" target="_blank" rel="noopener">AABB</a>) imply 76–81%, and a 2024 audit in Victoria, Australia about 50% (<a href="https://www.health.vic.gov.au/sites/default/files/2025-07/o-rhd-negative-rbc-audit-report-june-25.pdf" target="_blank" rel="noopener">Blood Matters</a>).</p>
       <p>Plasma: no audit found. About 73% matches Canada, where AB is 14% of plasma issued but about 3% of people (<a href="https://www.blood.ca/sites/default/files/2018-AB%20Plasma-Overview.pdf" target="_blank" rel="noopener">Canadian Blood Services</a>). No published figures were found for Portugal.</p>
@@ -665,9 +665,13 @@ function renderModel(m, p, plasma, f, gt){
     : `Score = ${parts.map(([v, l]) => `${v.toFixed(2)} ${l}`).join(' + ')} = <strong>${fmtV(m.V[b])}</strong>`;
   document.getElementById('key-other').hidden = !big(other);
   const notes = [];
-  if (th > 0) notes.push(`${theta}% of ${m.e > 0 ? 'patients who aren’t emergencies' : 'patients'} get their own type.`);
-  if (rest > 0) notes.push(`The other ${pc(rest)} get any compatible type, split across everyone who can give to them, so some still get their own.`);
-  if (big(em)) notes.push(`${pc(m.e)} of all ${comp} go to emergencies, all from ${m.U.length > 1 ? 'AB' : 'O−'} donors.`);
+  // the selected group's own patients: matched on purpose, plus those who get it from the compatible pool
+  const P = m.P[b], realized = th + (1 - th) * P;
+  if (theta >= 100) notes.push(`${d.l} patients all get ${d.l}.`);
+  else if (theta > 0) notes.push(`${d.l} patients: ${theta}% get ${d.l} on purpose. The other ${100 - theta}% get any compatible blood, ${pc(P)} of which is ${d.l}, so ${pc(realized)} get ${d.l} in all.`);
+  else notes.push(`${d.l} patients get any compatible blood, ${pc(P)} of which is ${d.l}.`);
+  if (big(other)) notes.push(`Other patients get ${d.l} as part of their compatible blood; the fewer people can give to a group, the more it adds.`);
+  if (big(em)) notes.push(`${pc(m.e)} of all ${comp} go to emergencies, all ${m.U.length > 1 ? 'AB' : 'O−'}.`);
   document.getElementById('press-note').textContent = notes.join(' ');
   document.getElementById('key-own').textContent = `${d.l} patients`;
   const maxC = Math.max(em, ...rows.map(r => r.v)) || 1, w = v => (v / maxC * 100).toFixed(2) + '%';
