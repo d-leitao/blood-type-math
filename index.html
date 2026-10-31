@@ -346,7 +346,7 @@ button.bar-row:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
       </div>
     </div>
 
-    <p class="assume" id="assume">The charts assume hospitals give <span class="stepper"><button type="button" class="step" data-for="theta" data-dir="-1" aria-label="Lower own-type share">−</button><span class="num-in"><input type="number" id="theta" min="0" max="99" step="1" inputmode="numeric" value="80" aria-label="Share of patients given their own type" aria-describedby="theta-help"><span aria-hidden="true">%</span></span><button type="button" class="step" data-for="theta" data-dir="1" aria-label="Raise own-type share">+</button></span> of patients their own type and use <span class="stepper"><button type="button" class="step" data-for="emerg" data-dir="-1" aria-label="Lower emergency share">−</button><span class="num-in"><input type="number" id="emerg" min="0" max="90" step="1" inputmode="numeric" value="16" aria-label="Share of O− units used in emergencies" aria-describedby="emerg-help"><span aria-hidden="true">%</span></span><button type="button" class="step" data-for="emerg" data-dir="1" aria-label="Raise emergency share">+</button></span> of <span id="emerg-what">O− units</span> in emergencies. <span id="assume-note">These are the best estimates.</span><button type="button" class="est" id="assume-reset" hidden>Back to the best estimates</button></p>
+    <p class="assume" id="assume">The charts assume hospitals give <span class="stepper"><button type="button" class="step" data-for="theta" data-dir="-1" aria-label="Lower own-type share">−</button><span class="num-in"><input type="number" id="theta" min="0" max="99" step="1" inputmode="numeric" value="80" aria-label="Share of patients given their own type" aria-describedby="theta-help"><span aria-hidden="true">%</span></span><button type="button" class="step" data-for="theta" data-dir="1" aria-label="Raise own-type share">+</button></span> of patients their own type and use <span class="stepper"><button type="button" class="step" data-for="emerg" data-dir="-1" aria-label="Lower emergency share">−</button><span class="num-in"><input type="number" id="emerg" min="0" max="90" step="1" inputmode="numeric" value="16" aria-label="Share of O− units used in emergencies" aria-describedby="emerg-help"><span aria-hidden="true">%</span></span><button type="button" class="step" data-for="emerg" data-dir="1" aria-label="Raise emergency share">+</button></span> of <span id="emerg-what">O− units</span> in emergencies. <span id="assume-note">These are the best available estimates.</span><button type="button" class="est" id="assume-reset" hidden>Back to the best available estimates</button></p>
   </section>
 
   <footer class="details" id="method">
@@ -597,7 +597,7 @@ function renderModel(m, p, plasma, f, gt){
   const atEst = theta === EST.theta && m.em === EST[key], reset = document.getElementById('assume-reset');
   document.getElementById('assume-note').hidden = !atEst;
   reset.hidden = atEst;
-  reset.textContent = `Back to the best estimates (${EST.theta}% and ${EST[key]}%)`;
+  reset.textContent = `Back to the best available estimates (${EST.theta}% and ${EST[key]}%)`;
   document.querySelectorAll('.step').forEach(b => {
     const v = b.dataset.for === 'theta' ? theta : m.em, max = b.dataset.for === 'theta' ? TMAX : EMAX;
     b.disabled = +b.dataset.dir < 0 ? v <= 0 : v >= max;
