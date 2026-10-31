@@ -188,7 +188,7 @@ button.ch,button.rh,button.c{appearance:none;border:0;font:inherit;color:inherit
 .details section{display:grid;gap:6px;align-content:start;min-width:0}
 .details h2{font-size:11.5px;font-family:var(--font-data);letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:500;margin:0}
 .details p{margin:0}
-.details ul{margin:0;padding-left:18px;display:grid;gap:4px}
+.details ul,.details ol{margin:0;padding-left:18px;display:grid;gap:4px}
 .details a{color:var(--ink);text-underline-offset:3px}
 .details code{font-family:var(--font-data);font-size:12.5px;color:var(--ink);white-space:normal}
 
@@ -237,6 +237,7 @@ button.ch,button.rh,button.c{appearance:none;border:0;font:inherit;color:inherit
 .est:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
 .calc{margin:0;padding:4px 6px 0;font-family:var(--font-data);font-size:13px;color:var(--ink-2);font-variant-numeric:tabular-nums}
 .calc strong{color:var(--ink);font-weight:500}
+.calc-note{margin:-6px 0 0;padding:0 6px;font-size:12.5px;line-height:1.5;color:var(--muted)}
 .model-charts{display:grid;gap:20px;grid-template-columns:minmax(0,1fr)}
 @media (min-width:900px){.model-charts{grid-template-columns:1fr 1fr}}
 .chart{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px 12px 12px;display:grid;gap:12px;align-content:start;min-width:0}
@@ -328,7 +329,7 @@ button.bar-row:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
       <div class="chart rank" id="rank-chart">
         <div class="chart-head">
           <h3>Donation rate needed</h3>
-          <p class="sub">How often each type’s donors would need to give to meet demand, against the average donor. Tap a type to highlight it.</p>
+          <p class="sub">Each type’s share of the blood patients receive ÷ its share of people. That’s how often its donors would need to give, compared with the average donor. Tap a type to highlight it.</p>
         </div>
         <div class="chart-axis" id="rank-axis"><span></span><span class="ax"><span>Average donor</span></span><span></span></div>
         <div class="bars" id="m-rank"></div>
@@ -336,11 +337,12 @@ button.bar-row:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
       <div class="chart press">
         <div class="chart-head">
           <h3 id="press-h">Where the score comes from</h3>
-          <p class="sub">Patients ÷ people who can donate to them, per group.</p>
+          <p class="sub">How stretched each patient group is: its size ÷ everyone who can give to it.</p>
         </div>
         <div class="chart-key"><span><i></i>Counted</span><span><i class="hollow"></i><span id="key-out">Can’t receive</span></span></div>
         <div class="bars" id="m-press"></div>
         <p class="calc" id="press-calc"></p>
+        <p class="calc-note" id="press-note"></p>
       </div>
     </div>
 
@@ -350,8 +352,13 @@ button.bar-row:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
   <footer class="details" id="method">
     <section aria-labelledby="d-score">
       <h2 id="d-score">How the score works</h2>
-      <p>Pressure on a patient group is <code>P = patients ÷ people who can donate to them</code>. At 1.0 every compatible donor is needed for that group alone.</p>
-      <p>A donor’s score is <code>θ + (1 − θ) × ΣP</code> over the groups it can give to, where <code>θ</code> is the share of patients given their own type. Universal donors (O− red cells, AB plasma) also carry emergency use, before the patient’s type is known, and that slice comes out of everyone else’s share. The score is how often a type’s donors would need to give to meet demand, against the average donor. Total demand equals total donations, so scores average exactly 1.0. Above 1, the type runs short unless its donors give more often. Below 1, its donors could give less often, or give another component. Counting reach alone would overrate common pairings: A+ patients can already take blood from most people.</p>
+      <p>Picture every type’s donors giving equally often. Each type then supplies its share of people: in Portugal, 6.1% of red cells would come from O− donors. Then share out what patients need:</p>
+      <ol>
+        <li><strong>Own type.</strong> Most patients get their own type, so their need lands on donors of that type.</li>
+        <li><strong>Emergencies.</strong> Some blood is given before the patient’s type is known. Only universal donors (O− red cells, AB plasma) are safe, so it all lands on them.</li>
+        <li><strong>Everyone else</strong> gets a compatible type, shared across all compatible donors by how many there are. A group few people can give to weighs more on each of them: its size ÷ everyone who can give to it, the bars in “Where the score comes from”.</li>
+      </ol>
+      <p>A type’s score is the need that lands on it ÷ what it supplies, which is how often its donors would need to give compared with the average donor. In Portugal at the best estimates, 10.3% of red cells would have to be O−, from 6.1% of people: 1.68×. Total need equals total donations, so the scores average exactly 1.0.</p>
     </section>
     <section aria-labelledby="d-theta">
       <h2 id="d-theta">The two assumptions</h2>
@@ -599,9 +606,10 @@ function renderModel(m, p, plasma, f, gt){
   const topV = m.V[m.order[0]], tops = m.order.filter(i => Math.abs(m.V[i] - topV) < 1e-9);
   // O− red cells and AB plasma reach every patient, so they top every population; ties share an ABO group (AB− and AB+ plasma)
   const topName = tops.length > 1 && tops.every(i => T[i].abo === T[tops[0]].abo) ? T[tops[0]].abo : joinAnd(tops.map(i => T[i].l));
+  const topP = tops.reduce((a, i) => a + p[i], 0);
   const lead = m.flat
     ? 'When every patient gets their own type and there are no emergencies, every type’s donors give at the average rate.'
-    : `<strong>${topName}</strong> ${plasma ? 'plasma is' : 'red cells are'} always the most needed, since anyone can receive ${plasma ? 'it' : 'them'}. ${cap(where(region))}, ${topName} donors would need to give ${fmtV(topV)}× as often as the average donor to keep up.`;
+    : `<strong>${topName}</strong> ${plasma ? 'plasma is' : 'red cells are'} always the most needed, since anyone can receive ${plasma ? 'it' : 'them'}. ${cap(where(region))}, ${fmt(topP)}% of people are ${topName}, but ${fmt(topP * topV)}% of the ${plasma ? 'plasma' : 'red cells'} patients receive would have to be ${topName}. So ${topName} donors would need to give ${fmtV(topV)}× as often as the average donor.`;
   const sel = pin && pin.t != null ? pin.t : null;
   const extra = m.flat || sel == null || tops.includes(sel) ? '' : ` ${T[sel].l}: ${fmtV(m.V[sel])}×, ${ord(m.rank[sel])} of 8.`;
   document.getElementById('model-result').innerHTML = lead + extra;
@@ -622,11 +630,20 @@ function renderModel(m, p, plasma, f, gt){
   const d = T[b];
   document.getElementById('press-h').textContent = `Where ${d.l}’s score comes from`;
   document.getElementById('key-out').textContent = `Can’t receive from ${d.l}`;
-  const th = theta / 100;
-  const inner = theta === 0 ? (m.e > 0 ? fmt3(m.S[b]) : 'ΣP') : theta === 100 ? '1' : `${th.toFixed(2)} + ${(1 - th).toFixed(2)} × ${fmt3(m.S[b])}`;
-  let calc = m.e > 0 ? `${(1 - m.e).toFixed(2)} × ${theta === 0 || theta === 100 ? inner : '(' + inner + ')'}` : inner;
-  if (m.e > 0 && m.U.includes(b)) calc += ` + ${fmtV(m.eL)} emergencies`;
-  document.getElementById('press-calc').innerHTML = `Score = ${calc} = <strong>${fmtV(m.V[b])}</strong>`;
+  const th = theta / 100, keep = 1 - m.e, own = keep * th, rest = keep * (1 - th), em = m.U.includes(b) ? m.eL : 0;
+  const parts = [];
+  const sh = rest * m.S[b], big = v => v >= 0.005;
+  if (big(own)) parts.push(`${own.toFixed(2)} own type`);
+  if (big(sh)) parts.push(`${sh.toFixed(2)} shared`);
+  if (big(em)) parts.push(`${em.toFixed(2)} emergencies`);
+  document.getElementById('press-calc').innerHTML = `Score = ${parts.join(' + ')} = <strong>${fmtV(m.V[b])}</strong>`;
+  const pc = v => (v * 100).toFixed(1).replace(/\.0$/, '') + '%';
+  const notes = [];
+  if (big(own)) notes.push(`Own type: ${theta}% of ${m.e > 0 ? 'the patients who aren’t emergencies' : 'patients'}.`);
+  if (big(sh)) notes.push(`Shared: ${pc(rest)} of patients × ${fmtV(m.S[b])}, the filled bars added up.`);
+  if (big(em)) notes.push(`Emergencies: ${pc(m.e)} of all ${comp}, all from ${m.U.length > 1 ? 'AB' : T[m.U[0]].l} donors.`);
+  const note = notes.join(' ');
+  document.getElementById('press-note').textContent = note;
   const maxP = Math.max(...m.P) || 1;
   T.forEach((u, j) => {
     const r = pressRows[j], inn = ok(plasma, d, u);
