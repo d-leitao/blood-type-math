@@ -591,10 +591,10 @@ const rankRows = T.map((t, i) => {
   b.type = 'button'; b.dataset.t = i; MR.appendChild(b); return b;
 });
 const pressRows = T.map(t => {
-  const r = mk('div', 'bar-row', `<span class="bl"><span class="tl sm">${t.l}</span></span><span class="bt"><span class="bf own"></span><span class="bf sh"></span></span><span class="bv"></span>`);
+  const r = mk('div', 'bar-row', `<span class="bl"><span class="tl sm">${t.l}</span></span><span class="bt"><span class="bf own"></span><span class="bf sh"></span></span><span class="bv"><span class="v1"></span><span class="v2"></span></span>`);
   MP.appendChild(r); return r;
 });
-const emRow = mk('div', 'bar-row', '<span class="bl"><span class="em-l">Emergencies</span></span><span class="bt"><span class="bf em"></span></span><span class="bv"></span>');
+const emRow = mk('div', 'bar-row', '<span class="bl"><span class="em-l">Emergencies</span></span><span class="bt"><span class="bf em"></span></span><span class="bv"><span class="v1"></span><span class="v2"></span></span>');
 MP.appendChild(emRow);
 const rankOf = e => { const b = e.target.closest('.bar-row'); return b && MR.contains(b) ? {t: +b.dataset.t} : null; };
 MR.addEventListener('click', e => { const t = rankOf(e); if (t) toggle(t); });
@@ -644,7 +644,7 @@ function renderModel(m, p, plasma, f, gt){
 
   const d = T[b];
   document.getElementById('press-h').textContent = `Where ${d.l}’s ${fmtV(m.V[b])} comes from`;
-  document.getElementById('press-sub').textContent = `How much each patient group adds to ${d.l}’s score. Groups few people can give to add more.`;
+  document.getElementById('press-sub').textContent = `Each row: the share of all ${comp} that would go from ${d.l} donors to that patient group, ÷ ${d.l}’s ${fmt(p[b])}% share of people.`;
   const th = theta / 100, keep = 1 - m.e, own = keep * th, rest = keep * (1 - th), em = m.U.includes(b) ? m.eL : 0;
   const big = v => v >= 0.005, pc = v => (v * 100).toFixed(1).replace(/\.0$/, '') + '%';
   // what each patient group takes from this donor type, split by who receives it (not by how they were matched):
@@ -678,14 +678,16 @@ function renderModel(m, p, plasma, f, gt){
     r.querySelector('.own').style.width = j === b ? w(c.v) : '0%';
     r.querySelector('.sh').style.width = j === b ? '0%' : w(c.v);
     r.querySelector('.own').classList.toggle('end', true);
-    r.querySelector('.bv').textContent = c.can ? shown[j].toFixed(2) : '—';
+    r.querySelector('.v1').textContent = !c.can ? '—' : shown[j] === 0 && c.v > 0 ? '<0.01' : shown[j].toFixed(2);
+    r.querySelector('.v2').textContent = c.can ? `${fmt(c.v * p[b])}% ÷ ${fmt(p[b])}%` : '';
     const why = `${u.l} patients are ${fmt(p[j])}% of people ${where(region)}, and ${fmt(m.pool[j])}% of people can give them ${comp}.`;
     r.title = c.can ? why : `${u.l} patients can’t receive ${comp} from ${d.l}.`;
     r.setAttribute('aria-label', c.can ? `${u.l} patients add ${shown[j].toFixed(2)} to ${d.l}’s score. ${why}` : `${u.l} patients can’t receive from ${d.l}.`);
   });
   emRow.hidden = !(em > 0);
   emRow.querySelector('.em').style.width = w(em);
-  emRow.querySelector('.bv').textContent = shown[8].toFixed(2);
+  emRow.querySelector('.v1').textContent = shown[8].toFixed(2);
+  emRow.querySelector('.v2').textContent = `${fmt(em * p[b])}% ÷ ${fmt(p[b])}%`;
   emRow.title = `Blood given before the patient’s type is known. Only ${plasma ? 'AB plasma' : 'O− red cells'} is safe for anyone.`;
 }
 
