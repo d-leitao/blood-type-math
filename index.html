@@ -623,7 +623,7 @@ function explain(k){
     const P = m.P[b], uni = m.U.includes(b), mid = theta >= 100 ? `all get ${d.l}` : theta > 0
       ? `${theta}% get ${d.l} on purpose and ${100 - theta}% get any compatible blood, ${pc(P)} of which is ${d.l}`
       : `all get any compatible blood, ${pc(P)} of which is ${d.l}`;
-    const emTxt = m.e > 0 ? ` ${pc(m.e)} are emergencies${uni ? ' (counted below)' : ` and get ${uName}`}. Of the rest,` : '';
+    const emTxt = m.e > 0 ? ` ${pc(m.e)} are emergencies${uni ? ' (counted in their own row)' : ` and get ${uName}`}. Of the rest,` : '';
     t = `${d.l} patients: as many as ${d.l} donors.${emTxt}${emTxt ? ' ' + mid : ' ' + mid[0].toUpperCase() + mid.slice(1)}. That’s ${n(c.rows[b].v)} for every 100 ${d.l} units.`;
   } else {
     const ratio = p[k] / p[b], slice = p[b] / m.pool[k];
@@ -680,7 +680,7 @@ function renderModel(m, p, plasma, f, gt){
 
   const d = T[b];
   document.getElementById('press-h').textContent = `Where ${d.l}’s ${fmtV(m.V[b])} comes from`;
-  document.getElementById('press-sub').textContent = `For every 100 units ${d.l} donors give, how many each patient group would need, if every type gives equally often. Tap a row to see why.`;
+  document.getElementById('press-sub').textContent = `For every 100 units ${d.l} donors give, how many each patient group would need. A group needs more ${d.l} when it’s large, and when ${d.l} is a big share of the blood it can take. ${matchMedia('(hover: hover)').matches ? 'Hover' : 'Tap'} a row for its numbers.`;
   const th = theta / 100, keep = 1 - m.e, own = keep * th, rest = keep * (1 - th), em = m.U.includes(b) ? m.eL : 0;
   const big = v => v >= 0.005, pc = v => (v * 100).toFixed(1).replace(/\.0$/, '') + '%';
   // what each patient group takes from this donor type, split by who receives it (not by how they were matched):
