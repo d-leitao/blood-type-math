@@ -436,7 +436,7 @@ document.getElementById('world-note').textContent =
 /* population select */
 const sel = document.getElementById('region');
 const g1 = document.createElement('optgroup'); g1.label = 'Featured';
-FEATURED.forEach(n => { if (D.r[n]) g1.appendChild(new Option(n === 'World' ? 'World (population-weighted)' : n, n)); });
+FEATURED.forEach(n => { if (D.r[n]) g1.appendChild(new Option(n, n)); });
 const g2 = document.createElement('optgroup'); g2.label = 'All countries';
 Object.keys(D.r).filter(n => n !== 'World').sort((a, b) => a.localeCompare(b)).forEach(n => g2.appendChild(new Option(n, n)));
 sel.append(g1, g2);
