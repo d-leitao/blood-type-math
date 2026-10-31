@@ -346,7 +346,6 @@ button.bar-row:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
           <h3 id="press-h">Where the score comes from</h3>
           <p class="sub" id="press-sub">How much each patient group adds to the score. Groups few people can give to add more.</p>
         </div>
-        <div class="chart-key"><span><i></i><span id="key-own">Same type</span></span><span id="key-other"><i class="sh"></i>Other types</span><span id="key-em"><i class="em"></i>Emergencies</span></div>
         <div class="chart-axis"><span>Patients</span><span></span><span class="r">Adds</span></div>
         <div class="bars" id="m-press"></div>
         <p class="calc" id="press-calc"></p>
@@ -663,7 +662,6 @@ function renderModel(m, p, plasma, f, gt){
   document.getElementById('press-calc').innerHTML = parts.length === 1
     ? `Score = <strong>${fmtV(m.V[b])}</strong>, all from ${parts[0][1]}`
     : `Score = ${parts.map(([v, l]) => `${v.toFixed(2)} ${l}`).join(' + ')} = <strong>${fmtV(m.V[b])}</strong>`;
-  document.getElementById('key-other').hidden = !big(other);
   const notes = [];
   // the selected group's own patients: matched on purpose, plus those who get it from the compatible pool
   const P = m.P[b], realized = th + (1 - th) * P;
@@ -673,7 +671,6 @@ function renderModel(m, p, plasma, f, gt){
   if (big(other)) notes.push(`Other patients get ${d.l} as part of their compatible blood; the fewer people can give to a group, the more it adds.`);
   if (big(em)) notes.push(`${pc(m.e)} of all ${comp} go to emergencies, all ${m.U.length > 1 ? 'AB' : 'O−'}.`);
   document.getElementById('press-note').textContent = notes.join(' ');
-  document.getElementById('key-own').textContent = `${d.l} patients`;
   const maxC = Math.max(em, ...rows.map(r => r.v)) || 1, w = v => (v / maxC * 100).toFixed(2) + '%';
   T.forEach((u, j) => {
     const r = pressRows[j], c = rows[j];
@@ -687,7 +684,6 @@ function renderModel(m, p, plasma, f, gt){
     r.setAttribute('aria-label', c.can ? `${u.l} patients add ${shown[j].toFixed(2)} to ${d.l}’s score. ${why}` : `${u.l} patients can’t receive from ${d.l}.`);
   });
   emRow.hidden = !(em > 0);
-  document.getElementById('key-em').hidden = emRow.hidden;
   emRow.querySelector('.em').style.width = w(em);
   emRow.querySelector('.bv').textContent = shown[8].toFixed(2);
   emRow.title = `Blood given before the patient’s type is known. Only ${plasma ? 'AB plasma' : 'O− red cells'} is safe for anyone.`;
