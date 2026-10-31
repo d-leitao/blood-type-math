@@ -263,13 +263,20 @@ button.bar-row:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
 .bv .v2{font-size:10.5px;color:var(--muted)}
 .rank .bar-row.focus .bf{background:var(--ink)}
 .rank .bt::after{content:"";position:absolute;top:0;bottom:0;left:var(--avg);border-left:1px dashed var(--ink-2);pointer-events:none}
-.press .bar-row .bf{background:var(--ink)}
-.press .bar-row.out .bf{background:transparent;box-shadow:inset 0 0 0 1.25px var(--muted)}
-.press .bar-row.out .tl{color:var(--muted)}
+.press .bf{min-width:0;border-radius:0}
+.press .bf.own{background:var(--ink)}
+.press .bf.sh{background:var(--bar)}
+.press .bf.em{background:repeating-linear-gradient(135deg,var(--ink) 0 3px,transparent 3px 6px);box-shadow:inset 0 0 0 1.25px var(--ink)}
+.press .bt .bf:last-of-type,.press .bt .bf.end{border-radius:0 4px 4px 0}
+.press .bar-row.out .tl,.press .bar-row.out .bv{color:var(--muted)}
+.press .em-l{font-size:12.5px;font-weight:600;color:var(--ink)}
+.chart-axis .r{text-align:right}
+.bar-row[hidden]{display:none}
 .chart-key{display:flex;flex-wrap:wrap;gap:6px 18px;padding:0 6px;font-size:12px;color:var(--ink-2)}
 .chart-key span{display:flex;align-items:center;gap:7px}
 .chart-key i{display:block;width:18px;height:10px;border-radius:0 3px 3px 0;background:var(--ink)}
-.chart-key i.hollow{background:transparent;box-shadow:inset 0 0 0 1.25px var(--muted)}
+.chart-key i.sh{background:var(--bar)}
+.chart-key i.em{background:repeating-linear-gradient(135deg,var(--ink) 0 3px,transparent 3px 6px);box-shadow:inset 0 0 0 1.25px var(--ink)}
 .chart-key i.dash{width:0;height:14px;border-radius:0;background:none;border-left:1px dashed var(--ink-2)}
 @media (max-width:480px){.chart-axis,.bar-row{grid-template-columns:70px minmax(0,1fr) 74px;column-gap:8px}.page{gap:16px}}
 
@@ -337,9 +344,10 @@ button.bar-row:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
       <div class="chart press">
         <div class="chart-head">
           <h3 id="press-h">Where the score comes from</h3>
-          <p class="sub">How stretched each patient group is: its size ÷ everyone who can give to it.</p>
+          <p class="sub" id="press-sub">How much each patient group adds to the score. Groups few people can give to add more.</p>
         </div>
-        <div class="chart-key"><span><i></i>Counted</span><span><i class="hollow"></i><span id="key-out">Can’t receive</span></span></div>
+        <div class="chart-key"><span><i></i>Own type</span><span><i class="sh"></i>Shared</span><span id="key-em"><i class="em"></i>Emergencies</span></div>
+        <div class="chart-axis"><span>Patients</span><span></span><span class="r">Adds</span></div>
         <div class="bars" id="m-press"></div>
         <p class="calc" id="press-calc"></p>
         <p class="calc-note" id="press-note"></p>
@@ -356,7 +364,7 @@ button.bar-row:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
       <ol>
         <li><strong>Own type.</strong> Most patients get their own type, so their need lands on donors of that type.</li>
         <li><strong>Emergencies.</strong> Some blood is given before the patient’s type is known. Only universal donors (O− red cells, AB plasma) are safe, so it all lands on them.</li>
-        <li><strong>Everyone else</strong> gets a compatible type, shared across all compatible donors by how many there are. A group few people can give to weighs more on each of them: its size ÷ everyone who can give to it, the bars in “Where the score comes from”.</li>
+        <li><strong>Everyone else</strong> gets a compatible type, shared across all compatible donors by how many there are. A group few people can give to weighs more on each of them: its size ÷ everyone who can give to it.</li>
       </ol>
       <p>A type’s score is the need that lands on it ÷ what it supplies, which is how often its donors would need to give compared with the average donor. In Portugal at the best estimates, 10.3% of red cells would have to be O−, from 6.1% of people: 1.68×. Total need equals total donations, so the scores average exactly 1.0.</p>
     </section>
@@ -569,6 +577,12 @@ function model(p, plasma){
           U: r.universal, e: r.emergencyShare, eL: r.emergencyLoad, em, flat: theta === 100 && em === 0};
 }
 const fmtV = v => v >= 10 ? v.toFixed(1) : v.toFixed(2);
+const apportion = vals => {
+  const k = 100, fl = vals.map(v => Math.floor(v * k + 1e-9));
+  let left = Math.round(vals.reduce((a, v) => a + v, 0) * k) - fl.reduce((a, v) => a + v, 0);
+  vals.map((v, i) => [v * k - fl[i], i]).sort((a, b) => b[0] - a[0]).forEach(([, i]) => { if (left > 0) { fl[i]++; left--; } });
+  return fl.map(v => v / k);
+};
 const fmt3 = v => v.toFixed(3);
 const ord = n => n + (n === 1 ? 'st' : n === 2 ? 'nd' : n === 3 ? 'rd' : 'th');
 
@@ -578,9 +592,11 @@ const rankRows = T.map((t, i) => {
   b.type = 'button'; b.dataset.t = i; MR.appendChild(b); return b;
 });
 const pressRows = T.map(t => {
-  const r = mk('div', 'bar-row', `<span class="bl"><span class="tl sm">${t.l}</span></span><span class="bt"><span class="bf"></span></span><span class="bv"><span class="v1"></span><span class="v2"></span></span>`);
+  const r = mk('div', 'bar-row', `<span class="bl"><span class="tl sm">${t.l}</span></span><span class="bt"><span class="bf own"></span><span class="bf sh"></span></span><span class="bv"></span>`);
   MP.appendChild(r); return r;
 });
+const emRow = mk('div', 'bar-row', '<span class="bl"><span class="em-l">Emergencies</span></span><span class="bt"><span class="bf em"></span></span><span class="bv"></span>');
+MP.appendChild(emRow);
 const rankOf = e => { const b = e.target.closest('.bar-row'); return b && MR.contains(b) ? {t: +b.dataset.t} : null; };
 MR.addEventListener('click', e => { const t = rankOf(e); if (t) toggle(t); });
 previewOn(MR, rankOf);
@@ -610,7 +626,7 @@ function renderModel(m, p, plasma, f, gt){
   const lead = m.flat
     ? 'When every patient gets their own type and there are no emergencies, every type’s donors give at the average rate.'
     : `<strong>${topName}</strong> ${plasma ? 'plasma is' : 'red cells are'} always the most needed, since anyone can receive ${plasma ? 'it' : 'them'}. ${cap(where(region))}, ${fmt(topP)}% of people are ${topName}, but ${fmt(topP * topV)}% of the ${plasma ? 'plasma' : 'red cells'} patients receive would have to be ${topName}. So ${topName} donors would need to give ${fmtV(topV)}× as often as the average donor.`;
-  const sel = pin && pin.t != null ? pin.t : null;
+  const sel = f;  // the highlighted type, hovered or selected
   const extra = m.flat || sel == null || tops.includes(sel) ? '' : ` ${T[sel].l}: ${fmtV(m.V[sel])}×, ${ord(m.rank[sel])} of 8.`;
   document.getElementById('model-result').innerHTML = lead + extra;
 
@@ -628,32 +644,45 @@ function renderModel(m, p, plasma, f, gt){
   });
 
   const d = T[b];
-  document.getElementById('press-h').textContent = `Where ${d.l}’s score comes from`;
-  document.getElementById('key-out').textContent = `Can’t receive from ${d.l}`;
+  document.getElementById('press-h').textContent = `Where ${d.l}’s ${fmtV(m.V[b])} comes from`;
+  document.getElementById('press-sub').textContent = `How much each patient group adds to ${d.l}’s score. Groups few people can give to add more.`;
   const th = theta / 100, keep = 1 - m.e, own = keep * th, rest = keep * (1 - th), em = m.U.includes(b) ? m.eL : 0;
-  const parts = [];
-  const sh = rest * m.S[b], big = v => v >= 0.005;
-  if (big(own)) parts.push(`${own.toFixed(2)} own type`);
-  if (big(sh)) parts.push(`${sh.toFixed(2)} shared`);
-  if (big(em)) parts.push(`${em.toFixed(2)} emergencies`);
+  const sh = rest * m.S[b], big = v => v >= 0.005, [rOwn, rSh, rEm] = apportion([own, sh, em]), parts = [];
+  if (big(own)) parts.push(`${rOwn.toFixed(2)} own type`);
+  if (big(sh)) parts.push(`${rSh.toFixed(2)} shared`);
+  if (big(em)) parts.push(`${rEm.toFixed(2)} emergencies`);
   document.getElementById('press-calc').innerHTML = `Score = ${parts.join(' + ')} = <strong>${fmtV(m.V[b])}</strong>`;
   const pc = v => (v * 100).toFixed(1).replace(/\.0$/, '') + '%';
   const notes = [];
   if (big(own)) notes.push(`Own type: ${theta}% of ${m.e > 0 ? 'the patients who aren’t emergencies' : 'patients'}.`);
-  if (big(sh)) notes.push(`Shared: ${pc(rest)} of patients × ${fmtV(m.S[b])}, the filled bars added up.`);
+  if (big(sh)) notes.push(`Shared: the other ${pc(rest)} of patients get any compatible type, split across everyone who can give to them.`);
   if (big(em)) notes.push(`Emergencies: ${pc(m.e)} of all ${comp}, all from ${m.U.length > 1 ? 'AB' : T[m.U[0]].l} donors.`);
   const note = notes.join(' ');
   document.getElementById('press-note').textContent = note;
-  const maxP = Math.max(...m.P) || 1;
-  T.forEach((u, j) => {
-    const r = pressRows[j], inn = ok(plasma, d, u);
-    r.classList.toggle('out', !inn);
-    r.querySelector('.bf').style.width = (m.P[j] / maxP * 100).toFixed(2) + '%';
-    r.querySelector('.v1').textContent = fmtV(m.P[j]);
-    r.querySelector('.v2').textContent = `${fmt(p[j])} ÷ ${fmt(m.pool[j])}`;
-    r.title = `${u.l} patients are ${fmt(p[j])}% of people ${where(region)}, and ${fmt(m.pool[j])}% can donate ${comp} to them.`;
-    r.setAttribute('aria-label', `${u.l} patients: pressure ${fmtV(m.P[j])}, ${fmt(p[j])}% of people over a donor pool of ${fmt(m.pool[j])}%. ${inn ? 'Counted' : 'Not counted'} for ${d.l}.`);
+  // each patient group's contribution to this donor's score: own-type patients, plus a share of
+  // everyone else's need (that group's size ÷ everyone who can give to it)
+  const rows = T.map((u, j) => {
+    const can = ok(plasma, d, u);
+    return {can, own: j === b ? own : 0, sh: can ? rest * m.P[j] : 0};
   });
+  const maxC = Math.max(em, ...rows.map(r => r.own + r.sh)) || 1, w = v => (v / maxC * 100).toFixed(2) + '%';
+  const shown = apportion([...rows.map(r => r.own + r.sh), em]);  // so the column adds up to the score
+  T.forEach((u, j) => {
+    const r = pressRows[j], c = rows[j], tot = c.own + c.sh;
+    r.classList.toggle('out', !c.can);
+    r.querySelector('.own').style.width = w(c.own);
+    r.querySelector('.sh').style.width = w(c.sh);
+    r.querySelector('.own').classList.toggle('end', c.sh === 0);
+    r.querySelector('.bv').textContent = c.can ? shown[j].toFixed(2) : '—';
+    const why = `${u.l} patients are ${fmt(p[j])}% of people ${where(region)}, and ${fmt(m.pool[j])}% of people can give them ${comp}.`;
+    r.title = c.can ? why : `${u.l} patients can’t receive ${comp} from ${d.l}.`;
+    r.setAttribute('aria-label', c.can ? `${u.l} patients add ${shown[j].toFixed(2)} to ${d.l}’s score. ${why}` : `${u.l} patients can’t receive from ${d.l}.`);
+  });
+  emRow.hidden = !(em > 0);
+  document.getElementById('key-em').hidden = emRow.hidden;
+  emRow.querySelector('.em').style.width = w(em);
+  emRow.querySelector('.bv').textContent = shown[8].toFixed(2);
+  emRow.title = `Blood given before the patient’s type is known. Only ${plasma ? 'AB plasma' : 'O− red cells'} is safe for anyone.`;
 }
 
 function summary(plasma, i, p){
