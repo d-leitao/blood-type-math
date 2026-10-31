@@ -154,9 +154,9 @@ test('calibration: θ 80% and 16% emergency use reproduce England\'s O− (13% o
   assert.ok(Math.abs(r.value[idx['O−']] - 13 / 7.8) < 0.05);
 });
 
-test('calibration: 72% emergency use comes close to Canada\'s AB plasma (14.1% of issues, about 3% of people)', () => {
-  const r = scoreTypes(DATA.Canada, 'plasma', 0.8, 0.72);
-  assert.ok(Math.abs(r.value[idx['AB+']] - 14.1 / 3) < 0.15);
+test('calibration: 73% emergency use comes close to Canada\'s AB plasma (14.1% of issues, about 3% of people)', () => {
+  const r = scoreTypes(DATA.Canada, 'plasma', 0.8, 0.73);
+  assert.ok(Math.abs(r.value[idx['AB+']] - 14.1 / 3) < 0.1);
 });
 
 test('emergency use stays bounded where universal donors are rare', () => {
