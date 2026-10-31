@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { TYPES, compatible, scoreTypes, parseCSV } from '../model.js';
+import { TYPES, compatible, scoreTypes, parseCSV, fitSameType, fitEmergency } from '../model.js';
 
 const idx = Object.fromEntries(TYPES.map((t, i) => [t.l, i]));
 const T = label => TYPES[idx[label]];
@@ -154,9 +154,9 @@ test('calibration: θ 80% and 16% emergency use reproduce England\'s O− (13% o
   assert.ok(Math.abs(r.value[idx['O−']] - 13 / 7.8) < 0.05);
 });
 
-test('calibration: 70% emergency use comes close to Canada\'s AB plasma (14.1% of issues, about 3% of people)', () => {
-  const r = scoreTypes(DATA.Canada, 'plasma', 0.8, 0.7);
-  assert.ok(Math.abs(r.value[idx['AB+']] - 14.1 / 3) < 0.5);
+test('calibration: 72% emergency use comes close to Canada\'s AB plasma (14.1% of issues, about 3% of people)', () => {
+  const r = scoreTypes(DATA.Canada, 'plasma', 0.8, 0.72);
+  assert.ok(Math.abs(r.value[idx['AB+']] - 14.1 / 3) < 0.15);
 });
 
 test('emergency use stays bounded where universal donors are rare', () => {
@@ -169,4 +169,23 @@ test('emergency use stays bounded where universal donors are rare', () => {
 test('emergency share of 1 or more is rejected', () => {
   assert.throws(() => scoreTypes(DATA.Portugal, 'red', 0.8, 1), RangeError);
   assert.throws(() => scoreTypes(DATA.Portugal, 'red', 0.8, -0.1), RangeError);
+});
+
+test("fitSameType: England's O− figures give about 69% with no emergencies and 80% with 16%", () => {
+  const uk = DATA['United Kingdom'], r = 13 / 7.8;
+  close(fitSameType(uk, 'red', 0, r), 0.687);
+  close(fitSameType(uk, 'red', 0.16, r), 0.797);
+  const th = fitSameType(uk, 'red', 0.16, r);
+  close(scoreTypes(uk, 'red', th, 0.16).value[idx['O−']], r, 1e-9);
+});
+
+test("fitEmergency: Canada's AB plasma gives about 73% at θ 80%", () => {
+  const f = fitEmergency(DATA.Canada, 'plasma', 0.8, 14.1 / 3);
+  close(f, 0.727);
+  close(scoreTypes(DATA.Canada, 'plasma', 0.8, f).value[idx['AB+']], 14.1 / 3, 1e-9);
+});
+
+test('fits return null when nothing in range matches', () => {
+  assert.equal(fitSameType(DATA['United Kingdom'], 'red', 0.5, 13 / 7.8), null);
+  assert.equal(fitEmergency(DATA.Canada, 'plasma', 0.8, 50, 0.9), null);
 });

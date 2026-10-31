@@ -30,13 +30,13 @@ The part of each group's need not met with same-type blood, `1 − θ`, is split
 
 Emergency use is set as a share of the universal donors' blood rather than of all blood. A fixed share of all blood would explode where they're rare: 2% of all red cells going to O− in Bhutan, where O− is 0.06% of people, would score O− donors at about 35×.
 
-Both are sliders on the page:
+Both are sliders on the page, below the chart. A data point like England's O− figures fixes the universal donors' score, which pins one setting once the other is chosen, so the "Best estimate" markers move together: the own-type marker fits England for the red-cell emergency share, and the plasma emergency marker fits Canada for the own-type share (`fitSameType` and `fitEmergency` in `model.js`). Where both sit at their markers:
 
 | Slider | Estimate | Source |
 |---|---|---|
 | Own type, `θ` | 80% | England: O− is 7.8% of patients but 13% of red-cell stock, and 16% of O− units go to emergencies ([NHSBT 2018 audit](https://nhsbtdbe.blob.core.windows.net/umbraco-assets-corp/17159/o-neg-survey-2018-final2.pdf)). With the same emergency share, Australia ([Lifeblood](https://www.lifeblood.com.au/news-and-stories/trending-research/better-management-o-negative-blood-supply)) and the US ([AABB](https://www.aabb.org/docs/default-source/default-document-library/resources/association-bulletins/ab19-02.pdf)) imply 76–81%, and a 2024 audit in Victoria, Australia about 50% ([Blood Matters](https://www.health.vic.gov.au/sites/default/files/2025-07/o-rhd-negative-rbc-audit-report-june-25.pdf)). |
 | Emergencies, red cells | 16% | The NHSBT audit above. |
-| Emergencies, plasma | 70% | No audit found. 70% reproduces Canada, where AB is 14% of plasma issued but about 3% of people ([Canadian Blood Services](https://www.blood.ca/sites/default/files/2018-AB%20Plasma-Overview.pdf)). |
+| Emergencies, plasma | 73% | No audit found. 73% reproduces Canada, where AB is 14% of plasma issued but about 3% of people ([Canadian Blood Services](https://www.blood.ca/sites/default/files/2018-AB%20Plasma-Overview.pdf)). |
 
 None of these are measured for Portugal. At `θ` = 0% and no emergencies, any compatible unit can go to any patient: the most flexible case. At 100% and no emergencies, every score is exactly 1.
 
@@ -47,7 +47,7 @@ Scores for Portugal:
 | Red cells, fully flexible | 3.18 | 1.46 | 1.04 | 0.48 | 0.35 | 0.16 | 0.06 | 0.03 |
 | Red cells, estimates (80%, 16%) | 1.68 | 1.07 | 0.99 | 0.88 | 0.86 | 0.82 | 0.80 | 0.79 |
 | Plasma, fully flexible | 0.42 | 0.42 | 1.35 | 1.35 | 1.12 | 1.12 | 3.05 | 3.05 |
-| Plasma, estimates (80%, 70%) | 0.80 | 0.80 | 0.96 | 0.96 | 0.92 | 0.92 | 4.23 | 4.23 |
+| Plasma, estimates (80%, 72%) | 0.79 | 0.79 | 0.95 | 0.95 | 0.91 | 0.91 | 4.48 | 4.48 |
 
 The universal donors come first in every country, because they reach every patient group. What changes by country is how far ahead they are.
 

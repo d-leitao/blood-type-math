@@ -90,3 +90,35 @@ export function parseCSV(text) {
   }
   return rows;
 }
+
+/*
+ * Calibration. A data point such as England's O− figures (13% of red-cell stock for 7.8% of
+ * patients) fixes the universal donors' score, so it pins one of the two settings once the
+ * other is chosen. Both functions solve for that setting by bisection, since the universal
+ * donors' score falls as θ rises and rises with f. They return null when nothing in range fits.
+ */
+const solve = (g, lo, hi) => {
+  let a = lo, b = hi, ga = g(a), gb = g(b);
+  if (ga === 0) return a;
+  if (gb === 0) return b;
+  if (ga * gb > 0) return null;
+  for (let k = 0; k < 60; k++) {
+    const m = (a + b) / 2, gm = g(m);
+    if (gm * ga > 0) { a = m; ga = gm; } else { b = m; }
+  }
+  return (a + b) / 2;
+};
+const universalScore = (p, component, sameType, emergency) => {
+  const r = scoreTypes(p, component, sameType, emergency);
+  return r.value[r.universal[0]];
+};
+
+/** θ that makes the universal donors' score equal `ratio`, given emergency share f. */
+export function fitSameType(p, component, emergency, ratio) {
+  return solve(th => universalScore(p, component, th, emergency) - ratio, 0, 1);
+}
+
+/** Emergency share f (up to `max`) that makes the universal donors' score equal `ratio`, given θ. */
+export function fitEmergency(p, component, sameType, ratio, max = 0.99) {
+  return solve(f => universalScore(p, component, sameType, f) - ratio, 0, max);
+}
