@@ -228,7 +228,7 @@ button.ch,button.rh,button.c{appearance:none;border:0;font:inherit;color:inherit
 #assume-note{color:var(--muted)}
 .assume .est{font-size:inherit}
 .num-in{display:inline-flex;align-items:center;gap:2px;padding:0 4px;font-family:var(--font-data);font-size:15px;color:var(--ink-2);border-left:1px solid var(--line);border-right:1px solid var(--line)}
-.num-in input{width:2.2em;border:0;background:transparent;font-family:var(--font-data);font-size:16px;font-variant-numeric:tabular-nums;color:var(--ink);padding:0;text-align:right;-moz-appearance:textfield;appearance:textfield}
+.num-in input{width:1.4em;border:0;background:transparent;font-family:var(--font-data);font-size:16px;font-variant-numeric:tabular-nums;color:var(--ink);padding:0;text-align:right;-moz-appearance:textfield;appearance:textfield}
 .num-in input::-webkit-inner-spin-button,.num-in input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
 .num-in input:focus{outline:none}
 .est{appearance:none;border:0;background:none;padding:0;font:inherit;font-size:12px;color:var(--ink-2);text-decoration:underline;text-decoration-color:var(--muted);text-underline-offset:3px;cursor:pointer}
@@ -344,7 +344,7 @@ button.bar-row:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
       </div>
     </div>
 
-    <p class="assume" id="assume">The charts assume hospitals give <span class="stepper"><button type="button" class="step" data-for="theta" data-dir="-1" aria-label="Lower own-type share">−</button><span class="num-in"><input type="number" id="theta" min="0" max="100" step="1" inputmode="numeric" value="80" aria-label="Share of patients given their own type" aria-describedby="theta-help"><span aria-hidden="true">%</span></span><button type="button" class="step" data-for="theta" data-dir="1" aria-label="Raise own-type share">+</button></span> of patients their own type and use <span class="stepper"><button type="button" class="step" data-for="emerg" data-dir="-1" aria-label="Lower emergency share">−</button><span class="num-in"><input type="number" id="emerg" min="0" max="90" step="1" inputmode="numeric" value="16" aria-label="Share of O− units used in emergencies" aria-describedby="emerg-help"><span aria-hidden="true">%</span></span><button type="button" class="step" data-for="emerg" data-dir="1" aria-label="Raise emergency share">+</button></span> of <span id="emerg-what">O− units</span> in emergencies. <span id="assume-note">These are the best estimates.</span><button type="button" class="est" id="assume-reset" hidden>Back to the best estimates</button></p>
+    <p class="assume" id="assume">The charts assume hospitals give <span class="stepper"><button type="button" class="step" data-for="theta" data-dir="-1" aria-label="Lower own-type share">−</button><span class="num-in"><input type="number" id="theta" min="0" max="99" step="1" inputmode="numeric" value="80" aria-label="Share of patients given their own type" aria-describedby="theta-help"><span aria-hidden="true">%</span></span><button type="button" class="step" data-for="theta" data-dir="1" aria-label="Raise own-type share">+</button></span> of patients their own type and use <span class="stepper"><button type="button" class="step" data-for="emerg" data-dir="-1" aria-label="Lower emergency share">−</button><span class="num-in"><input type="number" id="emerg" min="0" max="90" step="1" inputmode="numeric" value="16" aria-label="Share of O− units used in emergencies" aria-describedby="emerg-help"><span aria-hidden="true">%</span></span><button type="button" class="step" data-for="emerg" data-dir="1" aria-label="Raise emergency share">+</button></span> of <span id="emerg-what">O− units</span> in emergencies. <span id="assume-note">These are the best estimates.</span><button type="button" class="est" id="assume-reset" hidden>Back to the best estimates</button></p>
   </section>
 
   <footer class="details" id="method">
@@ -415,7 +415,8 @@ let region = load('btc-region', 'World'); if (!D.r[region]) region = 'World';
 let saved = parseInt(load('btc-sel', load('btc-me', '0')), 10);  // first visit: O− is selected
 let pin = saved >= 0 && saved < 8 ? {t: saved} : null;  // the highlight: a type {t}, a pairing {d, r}, or nothing
 const EST = {theta: 80, red: 16, plasma: 73}, EMAX = 90;  // best estimates: own-type share, and emergency share of universal donors' blood
-let theta = parseInt(load('btc-theta', String(EST.theta)), 10); if (!(theta >= 0 && theta <= 100)) theta = EST.theta;
+const TMAX = 99;  // two-digit fields
+let theta = parseInt(load('btc-theta', String(EST.theta)), 10); if (!(theta >= 0 && theta <= TMAX)) theta = EST.theta;
 const emerg = {};
 for (const k of ['red', 'plasma']) { const v = parseInt(load('btc-emerg-' + k, String(EST[k])), 10); emerg[k] = v >= 0 && v <= EMAX ? v : EST[k]; }
 
@@ -473,14 +474,14 @@ const thetaIn = document.getElementById('theta'), emIn = document.getElementById
 const pct = (el, max) => { if (el.value.trim() === '') return null; const v = Number(el.value); return Number.isInteger(v) && v >= 0 && v <= max ? v : null; };
 const setTheta = v => { theta = v; save('btc-theta', String(v)); update(); };
 const setEmerg = v => { emerg[mode] = v; save('btc-emerg-' + mode, String(v)); update(); };
-thetaIn.addEventListener('input', () => { const v = pct(thetaIn, 100); if (v != null) setTheta(v); });
+thetaIn.addEventListener('input', () => { const v = pct(thetaIn, TMAX); if (v != null) setTheta(v); });
 emIn.addEventListener('input', () => { const v = pct(emIn, EMAX); if (v != null) setEmerg(v); });
 // a blank or out-of-range entry snaps back to the last valid value
 thetaIn.addEventListener('change', () => { thetaIn.value = String(theta); });
 emIn.addEventListener('change', () => { emIn.value = String(emerg[mode]); });
 const STEP = {theta: 5, emerg: 1};
 const bump = (id, dir) => {
-  const v = id === 'theta' ? theta : emerg[mode], max = id === 'theta' ? 100 : EMAX, st = STEP[id];
+  const v = id === 'theta' ? theta : emerg[mode], max = id === 'theta' ? TMAX : EMAX, st = STEP[id];
   const n = dir > 0 ? Math.min(max, Math.floor(v / st) * st + st) : Math.max(0, Math.ceil(v / st) * st - st);
   if (n !== v) { (id === 'theta' ? setTheta : setEmerg)(n); document.getElementById(id).value = String(n); }  // the field may have focus
 };
@@ -591,7 +592,7 @@ function renderModel(m, p, plasma, f, gt){
   reset.hidden = atEst;
   reset.textContent = `Back to the best estimates (${EST.theta}% and ${EST[key]}%)`;
   document.querySelectorAll('.step').forEach(b => {
-    const v = b.dataset.for === 'theta' ? theta : m.em, max = b.dataset.for === 'theta' ? 100 : EMAX;
+    const v = b.dataset.for === 'theta' ? theta : m.em, max = b.dataset.for === 'theta' ? TMAX : EMAX;
     b.disabled = +b.dataset.dir < 0 ? v <= 0 : v >= max;
   });
 
