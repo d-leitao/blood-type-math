@@ -235,7 +235,7 @@ button.ch,button.rh,button.c{appearance:none;border:0;font:inherit;color:inherit
 .est:hover{text-decoration-color:var(--ink)}
 .est:disabled{text-decoration:none;color:var(--muted);cursor:default}
 .est:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
-.calc{margin:0;padding:4px 6px 0;font-family:var(--font-data);font-size:13px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.calc{margin:0;padding:4px 6px 0;font-size:14px;color:var(--ink-2);font-variant-numeric:tabular-nums}
 .calc strong{color:var(--ink);font-weight:500}
 .calc-note{margin:-6px 0 0;padding:0 6px;font-size:12.5px;line-height:1.5;color:var(--muted)}
 .model-charts{display:grid;gap:20px;grid-template-columns:minmax(0,1fr)}
@@ -346,7 +346,7 @@ button.bar-row:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
           <h3 id="press-h">Where the score comes from</h3>
           <p class="sub" id="press-sub">How much each patient group adds to the score. Groups few people can give to add more.</p>
         </div>
-        <div class="chart-axis"><span>Patients</span><span></span><span class="r">Adds</span></div>
+        <div class="chart-axis"><span>Patients</span><span></span><span class="r">Per 100</span></div>
         <div class="bars" id="m-press"></div>
         <p class="calc" id="press-calc"></p>
         <p class="calc-note" id="press-note"></p>
@@ -591,10 +591,10 @@ const rankRows = T.map((t, i) => {
   b.type = 'button'; b.dataset.t = i; MR.appendChild(b); return b;
 });
 const pressRows = T.map(t => {
-  const r = mk('div', 'bar-row', `<span class="bl"><span class="tl sm">${t.l}</span></span><span class="bt"><span class="bf own"></span><span class="bf sh"></span></span><span class="bv"><span class="v1"></span><span class="v2"></span></span>`);
+  const r = mk('div', 'bar-row', `<span class="bl"><span class="tl sm">${t.l}</span></span><span class="bt"><span class="bf own"></span><span class="bf sh"></span></span><span class="bv"><span class="v1"></span></span>`);
   MP.appendChild(r); return r;
 });
-const emRow = mk('div', 'bar-row', '<span class="bl"><span class="em-l">Emergencies</span></span><span class="bt"><span class="bf em"></span></span><span class="bv"><span class="v1"></span><span class="v2"></span></span>');
+const emRow = mk('div', 'bar-row', '<span class="bl"><span class="em-l">Emergencies</span></span><span class="bt"><span class="bf em"></span></span><span class="bv"><span class="v1"></span></span>');
 MP.appendChild(emRow);
 const rankOf = e => { const b = e.target.closest('.bar-row'); return b && MR.contains(b) ? {t: +b.dataset.t} : null; };
 MR.addEventListener('click', e => { const t = rankOf(e); if (t) toggle(t); });
@@ -644,8 +644,7 @@ function renderModel(m, p, plasma, f, gt){
 
   const d = T[b];
   document.getElementById('press-h').textContent = `Where ${d.l}’s ${fmtV(m.V[b])} comes from`;
-  const f2 = v => v >= 10 ? v.toFixed(1) : String(+v.toPrecision(3)), fp = v => String(+v.toFixed(2));  // enough digits for each division to check out
-  document.getElementById('press-sub').textContent = `Each row: the share of all ${comp} that would go from ${d.l} donors to that patient group, ÷ ${d.l}’s ${f2(p[b])}% share of people.`;
+  document.getElementById('press-sub').textContent = `For every 100 units ${d.l} donors give, how many each patient group would need, if every type gives equally often.`;
   const th = theta / 100, keep = 1 - m.e, own = keep * th, rest = keep * (1 - th), em = m.U.includes(b) ? m.eL : 0;
   const big = v => v >= 0.005, pc = v => (v * 100).toFixed(1).replace(/\.0$/, '') + '%';
   // what each patient group takes from this donor type, split by who receives it (not by how they were matched):
@@ -656,21 +655,23 @@ function renderModel(m, p, plasma, f, gt){
   });
   const shown = apportion([...rows.map(r => r.v), em]);  // so the column adds up to the score
   const same = shown[b], other = shown.slice(0, 8).reduce((a, v, j) => a + (j === b ? 0 : v), 0), emS = shown[8];
+  // per 100 units this type gives (apportioned, so the parts add up to the total)
+  const u100 = v => Math.round(v * 100), total = u100(shown.reduce((a, v) => a + v, 0));
   const parts = [];
-  if (big(same)) parts.push([same, `${d.l} patients`]);
-  if (big(other)) parts.push([other, 'other types']);
-  if (big(emS)) parts.push([emS, 'emergencies']);
-  document.getElementById('press-calc').innerHTML = parts.length === 1
-    ? `Score = <strong>${fmtV(m.V[b])}</strong>, all from ${parts[0][1]}`
-    : `Score = ${parts.map(([v, l]) => `${v.toFixed(2)} ${l}`).join(' + ')} = <strong>${fmtV(m.V[b])}</strong>`;
+  if (u100(same)) parts.push(`${u100(same)} for ${d.l} patients`);
+  if (u100(other)) parts.push(`${u100(other)} for other types`);
+  if (u100(emS)) parts.push(`${u100(emS)} for emergencies`);
+  const list = parts.length > 1 ? `: ${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}` : parts.length ? `, all ${parts[0].replace(/^\d+ /, '')}` : '';
+  document.getElementById('press-calc').innerHTML = `For every 100 units ${d.l} donors give, patients need <strong>${total}</strong>${list}. So ${d.l} donors would ${total < 100 ? 'only ' : ''}need to give <strong>${fmtV(m.V[b])}×</strong> as often as the average donor.`;
   const notes = [];
   // the selected group's own patients: matched on purpose, plus those who get it from the compatible pool
-  const P = m.P[b], realized = th + (1 - th) * P;
-  if (theta >= 100) notes.push(`${d.l} patients all get ${d.l}.`);
-  else if (theta > 0) notes.push(`${d.l} patients: ${theta}% get ${d.l} on purpose. The other ${100 - theta}% get any compatible blood, ${pc(P)} of which is ${d.l}, so ${pc(realized)} get ${d.l} in all.`);
-  else notes.push(`${d.l} patients get any compatible blood, ${pc(P)} of which is ${d.l}.`);
+  const P = m.P[b], nOwn = u100(same), outside = m.e > 0 ? ' outside emergencies' : '';
+  const how = theta >= 100 ? `all get ${d.l}` : theta > 0
+    ? `${theta}% get ${d.l} on purpose, and some of the rest get it anyway (${d.l} is ${pc(P)} of the blood they can take)`
+    : `they get any compatible blood, ${pc(P)} of which is ${d.l}`;
+  notes.push(`${d.l} patients: ${how}, so ${nOwn} in 100 get ${d.l}${outside}. There are as many ${d.l} patients as ${d.l} donors, so that’s ${nOwn} of every 100 units.`);
   if (big(other)) notes.push(`Other patients get ${d.l} as part of their compatible blood; the fewer people can give to a group, the more it adds.`);
-  if (big(em)) notes.push(`${pc(m.e)} of all ${comp} go to emergencies, all ${m.U.length > 1 ? 'AB' : 'O−'}.`);
+  if (big(em)) notes.push(`${pc(m.e)} of all ${comp} ${plasma ? 'goes' : 'go'} to emergencies, all ${m.U.length > 1 ? 'AB' : 'O−'}: ${u100(emS)} for every 100 units.`);
   document.getElementById('press-note').textContent = notes.join(' ');
   const maxC = Math.max(em, ...rows.map(r => r.v)) || 1, w = v => (v / maxC * 100).toFixed(2) + '%';
   T.forEach((u, j) => {
@@ -679,16 +680,14 @@ function renderModel(m, p, plasma, f, gt){
     r.querySelector('.own').style.width = j === b ? w(c.v) : '0%';
     r.querySelector('.sh').style.width = j === b ? '0%' : w(c.v);
     r.querySelector('.own').classList.toggle('end', true);
-    r.querySelector('.v1').textContent = !c.can ? '—' : shown[j] === 0 && c.v > 0 ? '<0.01' : shown[j].toFixed(2);
-    r.querySelector('.v2').textContent = c.can ? `${f2(c.v * p[b])}% ÷ ${fp(p[b])}%` : '';
+    r.querySelector('.v1').textContent = !c.can ? '—' : shown[j] === 0 && c.v > 0 ? '<1' : String(u100(shown[j]));
     const why = `${u.l} patients are ${fmt(p[j])}% of people ${where(region)}, and ${fmt(m.pool[j])}% of people can give them ${comp}.`;
     r.title = c.can ? why : `${u.l} patients can’t receive ${comp} from ${d.l}.`;
-    r.setAttribute('aria-label', c.can ? `${u.l} patients add ${shown[j].toFixed(2)} to ${d.l}’s score. ${why}` : `${u.l} patients can’t receive from ${d.l}.`);
+    r.setAttribute('aria-label', c.can ? `${u.l} patients need ${u100(shown[j])} of every 100 units ${d.l} donors give. ${why}` : `${u.l} patients can’t receive from ${d.l}.`);
   });
   emRow.hidden = !(em > 0);
   emRow.querySelector('.em').style.width = w(em);
-  emRow.querySelector('.v1').textContent = shown[8].toFixed(2);
-  emRow.querySelector('.v2').textContent = `${f2(em * p[b])}% ÷ ${fp(p[b])}%`;
+  emRow.querySelector('.v1').textContent = String(u100(shown[8]));
   emRow.title = `Blood given before the patient’s type is known. Only ${plasma ? 'AB plasma' : 'O− red cells'} is safe for anyone.`;
 }
 
