@@ -346,7 +346,7 @@ button.bar-row:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
           <h3 id="press-h">Where the score comes from</h3>
           <p class="sub" id="press-sub">How much each patient group adds to the score. Groups few people can give to add more.</p>
         </div>
-        <div class="chart-key"><span><i></i>Own type</span><span><i class="sh"></i>Shared</span><span id="key-em"><i class="em"></i>Emergencies</span></div>
+        <div class="chart-key"><span><i></i><span id="key-own">Same type</span></span><span id="key-other"><i class="sh"></i>Other types</span><span id="key-em"><i class="em"></i>Emergencies</span></div>
         <div class="chart-axis"><span>Patients</span><span></span><span class="r">Adds</span></div>
         <div class="bars" id="m-press"></div>
         <p class="calc" id="press-calc"></p>
@@ -647,32 +647,36 @@ function renderModel(m, p, plasma, f, gt){
   document.getElementById('press-h').textContent = `Where ${d.l}’s ${fmtV(m.V[b])} comes from`;
   document.getElementById('press-sub').textContent = `How much each patient group adds to ${d.l}’s score. Groups few people can give to add more.`;
   const th = theta / 100, keep = 1 - m.e, own = keep * th, rest = keep * (1 - th), em = m.U.includes(b) ? m.eL : 0;
-  const sh = rest * m.S[b], big = v => v >= 0.005, [rOwn, rSh, rEm] = apportion([own, sh, em]), parts = [];
-  if (big(own)) parts.push(`${rOwn.toFixed(2)} own type`);
-  if (big(sh)) parts.push(`${rSh.toFixed(2)} shared`);
-  if (big(em)) parts.push(`${rEm.toFixed(2)} emergencies`);
-  document.getElementById('press-calc').innerHTML = `Score = ${parts.join(' + ')} = <strong>${fmtV(m.V[b])}</strong>`;
-  const pc = v => (v * 100).toFixed(1).replace(/\.0$/, '') + '%';
-  const notes = [];
-  if (big(own)) notes.push(`Own type: ${theta}% of ${m.e > 0 ? 'the patients who aren’t emergencies' : 'patients'}.`);
-  if (big(sh)) notes.push(`Shared: the other ${pc(rest)} of patients get any compatible type, split across everyone who can give to them.`);
-  if (big(em)) notes.push(`Emergencies: ${pc(m.e)} of all ${comp}, all from ${m.U.length > 1 ? 'AB' : T[m.U[0]].l} donors.`);
-  const note = notes.join(' ');
-  document.getElementById('press-note').textContent = note;
-  // each patient group's contribution to this donor's score: own-type patients, plus a share of
-  // everyone else's need (that group's size ÷ everyone who can give to it)
+  const big = v => v >= 0.005, pc = v => (v * 100).toFixed(1).replace(/\.0$/, '') + '%';
+  // what each patient group takes from this donor type, split by who receives it (not by how they were matched):
+  // patients given their own type, plus that group's share of everyone given any compatible type
   const rows = T.map((u, j) => {
     const can = ok(plasma, d, u);
-    return {can, own: j === b ? own : 0, sh: can ? rest * m.P[j] : 0};
+    return {can, v: (j === b ? own : 0) + (can ? rest * m.P[j] : 0)};
   });
-  const maxC = Math.max(em, ...rows.map(r => r.own + r.sh)) || 1, w = v => (v / maxC * 100).toFixed(2) + '%';
-  const shown = apportion([...rows.map(r => r.own + r.sh), em]);  // so the column adds up to the score
+  const shown = apportion([...rows.map(r => r.v), em]);  // so the column adds up to the score
+  const same = shown[b], other = shown.slice(0, 8).reduce((a, v, j) => a + (j === b ? 0 : v), 0), emS = shown[8];
+  const parts = [];
+  if (big(same)) parts.push([same, `${d.l} patients`]);
+  if (big(other)) parts.push([other, 'other types']);
+  if (big(emS)) parts.push([emS, 'emergencies']);
+  document.getElementById('press-calc').innerHTML = parts.length === 1
+    ? `Score = <strong>${fmtV(m.V[b])}</strong>, all from ${parts[0][1]}`
+    : `Score = ${parts.map(([v, l]) => `${v.toFixed(2)} ${l}`).join(' + ')} = <strong>${fmtV(m.V[b])}</strong>`;
+  document.getElementById('key-other').hidden = !big(other);
+  const notes = [];
+  if (th > 0) notes.push(`${theta}% of ${m.e > 0 ? 'patients who aren’t emergencies' : 'patients'} get their own type.`);
+  if (rest > 0) notes.push(`The other ${pc(rest)} get any compatible type, split across everyone who can give to them, so some still get their own.`);
+  if (big(em)) notes.push(`${pc(m.e)} of all ${comp} go to emergencies, all from ${m.U.length > 1 ? 'AB' : 'O−'} donors.`);
+  document.getElementById('press-note').textContent = notes.join(' ');
+  document.getElementById('key-own').textContent = `${d.l} patients`;
+  const maxC = Math.max(em, ...rows.map(r => r.v)) || 1, w = v => (v / maxC * 100).toFixed(2) + '%';
   T.forEach((u, j) => {
-    const r = pressRows[j], c = rows[j], tot = c.own + c.sh;
+    const r = pressRows[j], c = rows[j];
     r.classList.toggle('out', !c.can);
-    r.querySelector('.own').style.width = w(c.own);
-    r.querySelector('.sh').style.width = w(c.sh);
-    r.querySelector('.own').classList.toggle('end', c.sh === 0);
+    r.querySelector('.own').style.width = j === b ? w(c.v) : '0%';
+    r.querySelector('.sh').style.width = j === b ? '0%' : w(c.v);
+    r.querySelector('.own').classList.toggle('end', true);
     r.querySelector('.bv').textContent = c.can ? shown[j].toFixed(2) : '—';
     const why = `${u.l} patients are ${fmt(p[j])}% of people ${where(region)}, and ${fmt(m.pool[j])}% of people can give them ${comp}.`;
     r.title = c.can ? why : `${u.l} patients can’t receive ${comp} from ${d.l}.`;
