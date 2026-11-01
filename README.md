@@ -54,7 +54,7 @@ The universal donors come first in every country, because they reach every patie
 **Limits**
 
 - One own-type share applies to every group, and apart from emergencies the rest is spread evenly across compatible donors. Real substitution is lopsided (units about to expire, special requirements), so the universal donors' scores are the best anchored and the others are rougher.
-- Patients are assumed to have the same type mix as the figures, many of which come from donors. In reality patients skew older, and donor pools differ by age and ethnicity.
+- Patients' blood needs are assumed to follow the same type mix as the figures, many of which come from donors: if 1.1% of people are B−, B− patients need 1.1% of all units. The model counts units of blood, not patients, so it doesn't matter that one patient may need many units. In reality patients skew older, and donor pools differ by age and ethnicity.
 - Only ABO and RhD count, and every unit is worth the same. Plasma ignores RhD.
 - Much donated plasma is made into medicines, where blood type doesn't matter. The plasma view only applies to plasma used directly in transfusions.
 

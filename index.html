@@ -381,7 +381,7 @@ button.bar-row:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
     <section aria-labelledby="d-assume">
       <h2 id="d-assume">Assumptions</h2>
       <ul>
-        <li>Patients have the same type mix as the figures above, many of which come from donors. Real patients skew older, and donor pools differ by age and ethnicity.</li>
+        <li>Patients’ blood needs follow the same type mix as the figures above, many of which come from donors: if 1.1% of people are B−, B− patients need 1.1% of all units. Real patients skew older, and donor pools differ by age and ethnicity.</li>
         <li>Apart from emergencies, the shared part is spread evenly. Real substitution is lopsided (expiring units, special requirements), so the universal donors’ scores are the best anchored.</li>
         <li>Much plasma becomes medicines, where type doesn’t matter, so the plasma view covers transfusion plasma only.</li>
         <li>ABO and RhD only. Hospitals still crossmatch every unit, and other antigen systems matter for some patients.</li>
@@ -621,14 +621,15 @@ function explain(k){
   } else if (!ok(plasma, d, T[k])) {
     t = `${T[k].l} patients can’t receive ${d.l} ${comp}.`;
   } else if (k === b) {
-    const P = m.P[b], uni = m.U.includes(b), mid = theta >= 100 ? `all get ${d.l}` : theta > 0
-      ? `${theta}% get ${d.l} on purpose and ${100 - theta}% get any compatible blood, ${pc(P)} of which is ${d.l}`
-      : `all get any compatible blood, ${pc(P)} of which is ${d.l}`;
-    const emTxt = m.e > 0 ? ` ${pc(m.e)} are emergencies${uni ? ' (counted in their own row)' : ` and get ${uName}`}. Of the rest,` : '';
-    t = `${d.l} patients: as many as ${d.l} donors.${emTxt}${emTxt ? ' ' + mid : ' ' + mid[0].toUpperCase() + mid.slice(1)}. That’s ${c.shown[b].toFixed(2)} donations per ${d.l} person.`;
+    // the model counts blood, not people: B− patients need as much as B− people give at the average rate
+    const P = m.P[b], uni = m.U.includes(b), mid = theta >= 100 ? `all of it gets ${d.l}` : theta > 0
+      ? `${theta}% gets ${d.l} on purpose and ${100 - theta}% gets any compatible blood, ${pc(P)} of which is ${d.l}`
+      : `all of it gets any compatible blood, ${pc(P)} of which is ${d.l}`;
+    const emTxt = m.e > 0 ? ` ${pc(m.e)} of it is for emergencies${uni ? ' (its own row)' : ` and comes from ${uName}`}. Of the rest,` : '';
+    t = `${d.l} patients need as much blood as ${d.l} people would give at the average rate, since ${d.l} is ${fmt(p[b])}% of people and of the blood patients need.${emTxt}${emTxt ? ' ' + mid : ' ' + mid[0].toUpperCase() + mid.slice(1)}. That’s ${c.shown[b].toFixed(2)} donations per ${d.l} person.`;
   } else {
     const ratio = p[k] / p[b], slice = p[b] / m.pool[k];
-    t = `${T[k].l} patients: ${ratio.toFixed(1)}× as many as ${d.l} donors. ${pc(rest)} of them get any compatible blood${m.e > 0 && theta < 100 ? ` (${100 - theta}% of those who aren’t emergencies)` : ''}, and ${d.l} is ${pc(slice)} of what they can take. ${ratio.toFixed(1)} × ${pc(rest)} × ${pc(slice)} ≈ ${String(+c.rows[k].v.toPrecision(2))} donations per ${d.l} person.`;
+    t = `${T[k].l} patients need ${ratio.toFixed(1)}× as much blood as ${d.l} people would give (${fmt(p[k])}% vs ${fmt(p[b])}% of people). ${pc(rest)} of that need gets any compatible blood${m.e > 0 && theta < 100 ? ` (${100 - theta}% of what isn’t for emergencies)` : ''}, and ${d.l} is ${pc(slice)} of what they can take. ${ratio.toFixed(1)} × ${pc(rest)} × ${pc(slice)} ≈ ${String(+c.rows[k].v.toPrecision(2))} donations per ${d.l} person.`;
   }
   document.getElementById('press-note').textContent = t;
   [...pressRows, emRow].forEach((r, i) => r.classList.toggle('explained', i === k));
