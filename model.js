@@ -73,11 +73,11 @@ export function scoreTypes(p, component = 'red', sameType = 0, emergency = 0) {
   return { pool, pressure, shared, matched, universal, emergencyShare: e, emergencyLoad: extra, value, rank, order };
 }
 
-/** Parse data.csv: a header row, then `population,O-,O+,A-,A+,B-,B+,AB-,AB+` rows of percentages. */
+/** Parse data.csv: a header row, then `country,O-,O+,A-,A+,B-,B+,AB-,AB+` rows of percentages. */
 export function parseCSV(text) {
   const lines = text.trim().split(/\r?\n/);
   const header = lines.shift().split(',').map(s => s.trim());
-  const want = ['population', 'O-', 'O+', 'A-', 'A+', 'B-', 'B+', 'AB-', 'AB+'];
+  const want = ['country', 'O-', 'O+', 'A-', 'A+', 'B-', 'B+', 'AB-', 'AB+'];
   if (header.join() !== want.join()) throw new Error(`Unexpected CSV header: ${header.join()}`);
   const rows = {};
   for (const line of lines) {

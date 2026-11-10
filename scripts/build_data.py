@@ -20,7 +20,7 @@ OUT = ROOT / "data.csv"
 
 # Column order used by the page: O-, O+, A-, A+, B-, B+, AB-, AB+
 COLS = ["Oneg", "Opos", "Aneg", "Apos", "Bneg", "Bpos", "ABneg", "ABpos"]
-HEADER = ["population", "O-", "O+", "A-", "A+", "B-", "B+", "AB-", "AB+"]
+HEADER = ["country", "O-", "O+", "A-", "A+", "B-", "B+", "AB-", "AB+"]
 
 
 def round2(x):
