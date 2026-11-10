@@ -623,12 +623,13 @@ const pressRows = T.map(t => {
 });
 const emRow = mk('div', 'bar-row', '<span class="bl"><span class="em-l">Emergencies</span></span><span class="bt"><span class="bf em"></span></span><span class="bv"><span class="v1"></span></span>');
 MP.appendChild(emRow);
-[...pressRows, emRow].forEach((r, k) => { r.dataset.k = k; r.tabIndex = 0; });
+[...pressRows, emRow].forEach((r, k) => { r.dataset.k = k; r.tabIndex = 0; r.setAttribute('role', 'button'); });
 let prow = null, pressCtx = null;  // the breakdown row being explained, if pinned by a tap
 const rowOf = e => { const r = e.target.closest('#m-press .bar-row'); return r ? +r.dataset.k : null; };
 MP.addEventListener('pointerover', e => { if (e.pointerType !== 'touch') { const k = rowOf(e); if (k != null) explain(k); } });
 MP.addEventListener('pointerleave', e => { if (e.pointerType !== 'touch') explain(prow); });
 MP.addEventListener('click', e => { const k = rowOf(e); if (k == null) return; prow = prow === k ? null : k; explain(prow); });
+MP.addEventListener('keydown', e => { if (e.key !== 'Enter' && e.key !== ' ') return; const k = rowOf(e); if (k == null) return; e.preventDefault(); prow = prow === k ? null : k; explain(prow); });
 MP.addEventListener('focusin', e => { const k = rowOf(e); if (k != null) explain(k); });
 MP.addEventListener('focusout', e => { if (!MP.contains(e.relatedTarget)) explain(prow); });
 // one row, in words: where its number comes from
