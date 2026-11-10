@@ -1,14 +1,13 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { TYPES, compatible, scoreTypes, breakdown, parseCSV, fitSameType, fitEmergency } from '../model.js';
+import { TYPES, compatible, scoreTypes, breakdown, ownTypeShare, parseCSV, fitSameType, fitEmergency, TARGETS, ESTIMATES } from '../model.js';
 
 const idx = Object.fromEntries(TYPES.map((t, i) => [t.l, i]));
 const T = label => TYPES[idx[label]];
 const DATA = parseCSV(readFileSync(new URL('../data.csv', import.meta.url), 'utf8'));
-// Calibration targets: a type's share of the blood used ÷ its share of donors.
-const ENGLAND_ONEG = 13 / DATA['United Kingdom'][idx['O−']];  // NHSBT 2018: O− is 13% of red-cell stock
-const CANADA_AB = 14.1 / 4;  // Canadian Blood Services 2018: AB is 14.1% of plasma issued, about 4% of donors
+const ENGLAND_ONEG = TARGETS.englandOnegStock / DATA['United Kingdom'][idx['O−']];
+const CANADA_AB = TARGETS.canadaAbPlasma / TARGETS.canadaAbDonors;
 const close = (a, b, eps = 0.005) => assert.ok(Math.abs(a - b) < eps, `${a} is not within ${eps} of ${b}`);
 
 test('red cells: O− gives to everyone, AB+ receives from everyone', () => {
@@ -203,4 +202,20 @@ test('breakdown: the parts add up to the score, for every type, country and sett
       });
     }
   }
+});
+
+test('the best estimates are the fits, to the nearest percent', () => {
+  const th = fitSameType(DATA['United Kingdom'], 'red', ESTIMATES.emergency.red, ENGLAND_ONEG);
+  assert.equal(Math.round(th * 100) / 100, ESTIMATES.ownType);
+  const f = fitEmergency(DATA.Canada, 'plasma', ESTIMATES.ownType, CANADA_AB);
+  assert.equal(Math.round(f * 100) / 100, ESTIMATES.emergency.plasma);
+});
+
+test("Portugal at the best estimates matches the README's score table", () => {
+  const { ownType, emergency } = ESTIMATES;
+  scoreTypes(DATA.Portugal, 'red', ownType, emergency.red).score
+    .forEach((v, i) => close(v, [1.58, 1.06, 0.99, 0.90, 0.88, 0.85, 0.84, 0.83][i]));
+  scoreTypes(DATA.Portugal, 'plasma', ownType, emergency.plasma).score
+    .forEach((v, i) => close(v, [0.84, 0.84, 0.98, 0.98, 0.94, 0.94, 3.50, 3.50][i]));
+  close(ownTypeShare(DATA.Portugal, 'red', ownType), 0.935);
 });

@@ -369,21 +369,21 @@ button.bar-row:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
   <footer class="details" id="method">
     <section aria-labelledby="d-score">
       <h2 id="d-score">How the score works</h2>
-      <p>Picture every type’s donors giving equally often. Each type then supplies its share of people: in Portugal, 6.1% of red cells would come from O− donors. Then share out what patients need:</p>
+      <p>Picture every type’s donors giving equally often. Each type then supplies its share of people: in Portugal, <span data-fig="pt-oneg">6.1</span>% of red cells would come from O− donors. Then share out what patients need:</p>
       <ol>
         <li><strong>Own type, on purpose.</strong> Hospitals pick the patient’s own type for most patients, so that need lands on donors of that type.</li>
         <li><strong>Emergencies.</strong> Some blood is given before the patient’s type is known. Only universal donors (O− red cells, AB plasma) are safe, so it all lands on them.</li>
-        <li><strong>Any compatible blood.</strong> The rest get whatever compatible blood there is, in proportion to how much each type donates. That’s often still their own type, so more patients end up with their own type than were matched on purpose: about 94% in Portugal. A group few people can give to weighs more on each of its donors: its size ÷ everyone who can give to it.</li>
+        <li><strong>Any compatible blood.</strong> The rest get whatever compatible blood there is, in proportion to how much each type donates. That’s often still their own type, so more patients end up with their own type than were matched on purpose: about <span data-fig="pt-own">94</span>% in Portugal. A group few people can give to weighs more on each of its donors: its size ÷ everyone who can give to it.</li>
       </ol>
-      <p>A type’s score is the need that lands on it ÷ what it supplies, which is how often its donors would need to give compared with the average donor. In Portugal at the best estimates, 9.6% of red cells would have to be O−, from 6.1% of people: 1.58×. Total need equals total donations, so the scores average exactly 1.0.</p>
+      <p>A type’s score is the need that lands on it ÷ what it supplies, which is how often its donors would need to give compared with the average donor. In Portugal at the best estimates, <span data-fig="pt-oneg-used">9.6</span>% of red cells would have to be O−, from <span data-fig="pt-oneg">6.1</span>% of people: <span data-fig="pt-oneg-score">1.58</span>×. Total need equals total donations, so the scores average exactly 1.0.</p>
     </section>
     <section aria-labelledby="d-theta">
       <h2 id="d-theta">The two assumptions</h2>
-      <p id="theta-help">Own type: the share of patients given their own type on purpose. The rest get any compatible blood, often their own type too, so about 94% of patients in Portugal end up with their own type at 84%. 0% is fully flexible. The 84% is an estimate, not a count of patients: it’s the share that makes O−’s score match England’s figures, where much of O−’s extra use is units given to other types before they expire.</p>
+      <p id="theta-help">Own type: the share of patients given their own type on purpose. The rest get any compatible blood, often their own type too, so about <span data-fig="pt-own">94</span>% of patients in Portugal end up with their own type at <span data-fig="theta">84</span>%. 0% is fully flexible. The <span data-fig="theta">84</span>% is an estimate, not a count of patients: it’s the share that makes O−’s score match England’s figures, where much of O−’s extra use is units given to other types before they expire.</p>
       <p id="emerg-help">Emergencies: the share of universal donors’ blood used before the patient’s type is known. It’s a share of their blood, not of all blood, so it stays realistic where they’re rare. A fixed share of all blood would put about 15 times the average load on O− donors in Japan.</p>
-      <p>Red cells: in England 16% of O− units went to emergencies, and O− made up 13% of the median hospital’s red-cell stock but 8.3% of UK donors (<a href="https://nhsbtdbe.blob.core.windows.net/umbraco-assets-corp/17159/o-neg-survey-2018-final2.pdf" target="_blank" rel="noopener">NHSBT 2018 audit</a>). That implies about 84% own type. Stock isn’t the same as use, so this is a rough guide. With the same emergency share, Australia (9% of people, over 15% of demand; <a href="https://www.lifeblood.com.au/news-and-stories/trending-research/better-management-o-negative-blood-supply" target="_blank" rel="noopener">Lifeblood</a>) and the US (6.8% of donors, 12.1% of transfusions in 2023; <a href="https://www.aabb.org/docs/default-source/default-document-library/resources/association-bulletins/ab19-02.pdf" target="_blank" rel="noopener">AABB</a>) imply 76–81%, and a 2024 audit in Victoria, Australia about 50% (<a href="https://www.health.vic.gov.au/sites/default/files/2025-07/o-rhd-negative-rbc-audit-report-june-25.pdf" target="_blank" rel="noopener">Blood Matters</a>).</p>
-      <p>Plasma: no audit found. About 65% matches Canada, where AB is 14% of plasma issued but about 4% of donors (<a href="https://www.blood.ca/sites/default/files/2018-AB%20Plasma-Overview.pdf" target="_blank" rel="noopener">Canadian Blood Services</a>). No published figures were found for Portugal.</p>
-      <p>The two estimates depend on each other: 84% own type assumes 16% emergencies, and 65% plasma emergencies assumes 84% own type. With no emergencies, England’s figures point to about 74%.</p>    </section>
+      <p>Red cells: in England 16% of O− units went to emergencies, and O− made up 13% of the median hospital’s red-cell stock but <span data-fig="uk-oneg">8.3</span>% of UK donors (<a href="https://nhsbtdbe.blob.core.windows.net/umbraco-assets-corp/17159/o-neg-survey-2018-final2.pdf" target="_blank" rel="noopener">NHSBT 2018 audit</a>). That implies about <span data-fig="theta">84</span>% own type. Stock isn’t the same as use, so this is a rough guide. With the same emergency share, Australia (9% of people, over 15% of demand; <a href="https://www.lifeblood.com.au/news-and-stories/trending-research/better-management-o-negative-blood-supply" target="_blank" rel="noopener">Lifeblood</a>) and the US (6.8% of donors, 12.1% of transfusions in 2023; <a href="https://www.aabb.org/docs/default-source/default-document-library/resources/association-bulletins/ab19-02.pdf" target="_blank" rel="noopener">AABB</a>) imply 76–81%, and a 2024 audit in Victoria, Australia about 50% (<a href="https://www.health.vic.gov.au/sites/default/files/2025-07/o-rhd-negative-rbc-audit-report-june-25.pdf" target="_blank" rel="noopener">Blood Matters</a>).</p>
+      <p>Plasma: no audit found. About <span data-fig="plasma">65</span>% matches Canada, where AB is 14% of plasma issued but about 4% of donors (<a href="https://www.blood.ca/sites/default/files/2018-AB%20Plasma-Overview.pdf" target="_blank" rel="noopener">Canadian Blood Services</a>). No published figures were found for Portugal.</p>
+      <p>The two estimates depend on each other: <span data-fig="theta">84</span>% own type assumes <span data-fig="red">16</span>% emergencies, and <span data-fig="plasma">65</span>% plasma emergencies assumes <span data-fig="theta">84</span>% own type. With no emergencies, England’s figures point to about <span data-fig="uk-no-emerg">74</span>%.</p>    </section>
     <section aria-labelledby="d-assume">
       <h2 id="d-assume">Assumptions</h2>
       <ul>
@@ -403,14 +403,15 @@ button.bar-row:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
 </div>
 
 <script type="module">
-import { TYPES as T, compatible, scoreTypes, breakdown, parseCSV } from './model.js';
+import { TYPES as T, compatible, scoreTypes, breakdown, ownTypeShare, fitSameType, parseCSV, TARGETS, ESTIMATES } from './model.js';
 
 (async function(){
 let D;
 try {
   const res = await fetch('data.csv');
   if (!res.ok) throw new Error(res.status + ' ' + res.statusText);
-  D = { r: parseCSV(await res.text()), meta: { n: 123, popbn: 7.4 } };
+  const r = parseCSV(await res.text());
+  D = { r, meta: { n: Object.keys(r).length - 1, popbn: 7.4 } };
 } catch (err) {
   const msg = document.createElement('p');
   msg.className = 'load-error';
@@ -438,11 +439,25 @@ let mode = load('btc-mode', 'red'); if (mode !== 'red' && mode !== 'plasma') mod
 let region = load('btc-region', 'World'); if (!D.r[region]) region = 'World';
 let saved = parseInt(load('btc-sel', load('btc-me', '0')), 10);  // first visit: O− is selected
 let pin = saved >= 0 && saved < 8 ? {t: saved} : null;  // the highlight: a type {t}, a pairing {d, r}, or nothing
-const EST = {theta: 84, red: 16, plasma: 65}, EMAX = 90;  // best estimates: own-type share, and emergency share of universal donors' blood
+const pct100 = x => Math.round(x * 100);
+const EST = {theta: pct100(ESTIMATES.ownType), red: pct100(ESTIMATES.emergency.red), plasma: pct100(ESTIMATES.emergency.plasma)}, EMAX = 90;
 const TMAX = 99;  // two-digit fields
 let theta = parseInt(load('btc-theta', String(EST.theta)), 10); if (!(theta >= 0 && theta <= TMAX)) theta = EST.theta;
 const emerg = {};
 for (const k of ['red', 'plasma']) { const v = parseInt(load('btc-emerg-' + k, String(EST[k])), 10); emerg[k] = v >= 0 && v <= EMAX ? v : EST[k]; }
+
+/* the bottom section's worked figures, from the model at the best estimates */
+{
+  const pt = D.r.Portugal, uk = D.r['United Kingdom'];
+  const s = scoreTypes(pt, 'red', ESTIMATES.ownType, ESTIMATES.emergency.red).score;
+  const fig = {
+    'pt-oneg': fmt(pt[0]), 'pt-oneg-used': fmt(pt[0] * s[0]), 'pt-oneg-score': s[0].toFixed(2),
+    'pt-own': String(pct100(ownTypeShare(pt, 'red', ESTIMATES.ownType))), 'uk-oneg': fmt(uk[0]),
+    'uk-no-emerg': String(pct100(fitSameType(uk, 'red', 0, TARGETS.englandOnegStock / uk[0]))),
+    theta: String(EST.theta), red: String(EST.red), plasma: String(EST.plasma),
+  };
+  document.querySelectorAll('[data-fig]').forEach(el => { el.textContent = fig[el.dataset.fig]; });
+}
 
 document.getElementById('lg-ok').innerHTML = CHECK;
 document.getElementById('lg-no').innerHTML = CROSS;
