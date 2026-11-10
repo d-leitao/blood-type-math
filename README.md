@@ -15,7 +15,7 @@ An interactive map of who can give blood to whom, with how common each type is i
 
 A donation goes further when it can reach patients who have few other donors to rely on. Counting how many people a type can give to overrates common pairings: A+ patients can already take red cells from most of the population, so one more donor for them adds little. The model weighs each patient group by how hard it is to supply.
 
-With `p[j]` the share of people with type `j`, `θ` the share of patients deliberately given their own type, and `f` the share of universal donors' blood used in emergencies:
+With `p[j]` the share of people with type `j`, `θ` the share of patients deliberately given their own type (an estimate, not a count of patients: see below), and `f` the share of universal donors' blood used in emergencies:
 
 ```
 pool[j]     = Σ p[i]        over donor types i that can give to j     (who can donate to you)
