@@ -85,7 +85,7 @@ python3 scripts/build_data.py # rebuild data.csv from data/source.csv
 | File | What it is |
 |---|---|
 | `index.html` | The page: layout, styles and interface code |
-| `model.js` | Compatibility rules and the donor value model, with no page code, so the tests can import it |
+| `model.js` | Compatibility rules and the donor score model, with no page code, so the tests can import it |
 | `data.csv` | Prevalence by country, generated |
 | `data/source.csv` | Raw figures and populations |
 | `scripts/build_data.py` | Builds `data.csv` from the source |

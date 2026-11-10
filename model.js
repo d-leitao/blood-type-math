@@ -1,4 +1,4 @@
-// Blood type compatibility rules and the donor value model.
+// Blood type compatibility rules and the donor score model.
 // Pure functions with no DOM access, so the page and the tests share them.
 
 /** The eight ABO/RhD types, with the antigens their red cells carry. */
@@ -26,7 +26,7 @@ export function compatible(component, donor, recipient) {
  * Which donations are most needed.
  *
  * p[i] is the share of people with type i, standing in for both donors and patients.
- * sameType (θ, 0..1) is the share of each typed patient group deliberately given same-type blood.
+ * ownType (θ, 0..1) is the share of each typed patient group deliberately given own-type blood.
  * emergency (f, 0..<1) is the share of universal donors' blood used in emergencies, before
  * the patient's type is known. Universal donors can give to every type: O− for red cells,
  * AB− and AB+ for plasma.
@@ -35,8 +35,8 @@ export function compatible(component, donor, recipient) {
  *   pressure[j] = p[j] / pool[j]                                  (need per compatible donor)
  *   shared[i]   = sum of pressure[j] over recipients j that i can give to
  *   matched[i]  = θ + (1 − θ) · shared[i]
- *   value[i]    = (1 − e) · matched[i] + e / u     for universal donors (u = their population share)
- *   value[i]    = (1 − e) · matched[i]             for everyone else
+ *   score[i]    = (1 − e) · matched[i] + e / u     for universal donors (u = their population share)
+ *   score[i]    = (1 − e) · matched[i]             for everyone else
  *
  * e is the share of all units used in emergencies. It comes out of every group's need, and
  * is set so that emergencies take a share f of the universal donors' total load:
@@ -45,19 +45,19 @@ export function compatible(component, donor, recipient) {
  * blood would put about 35 times the average load on O− donors in Bhutan.
  *
  * The rest of each group's need (1 − θ) is drawn from everyone who can give to that group in
- * proportion to how many there are, own type included, so more than θ end up with their own type. value is how often a type's donors would need
+ * proportion to how many there are, own type included, so more than θ end up with their own type. score is how often a type's donors would need
  * to give to meet demand, against the average donor. Total demand equals total donations, so
  * its population-weighted mean is exactly 1 for any θ and f. θ = 0 is fully flexible matching; θ = 1 with f = 0 gives every type 1.
  */
-export function scoreTypes(p, component = 'red', sameType = 0, emergency = 0) {
-  if (!(sameType >= 0 && sameType <= 1)) throw new RangeError('sameType must be between 0 and 1');
+export function scoreTypes(p, component = 'red', ownType = 0, emergency = 0) {
+  if (!(ownType >= 0 && ownType <= 1)) throw new RangeError('ownType must be between 0 and 1');
   if (!(emergency >= 0 && emergency < 1)) throw new RangeError('emergency must be at least 0 and below 1');
   const ok = (d, r) => compatible(component, TYPES[d], TYPES[r]);
   const idx = TYPES.map((_, i) => i);
   const pool = idx.map(r => idx.reduce((s, d) => s + (ok(d, r) ? p[d] : 0), 0));
   const pressure = p.map((v, j) => (pool[j] > 0 ? v / pool[j] : 0));
   const shared = idx.map(d => idx.reduce((s, r) => s + (ok(d, r) ? pressure[r] : 0), 0));
-  const matched = shared.map(x => sameType + (1 - sameType) * x);
+  const matched = shared.map(x => ownType + (1 - ownType) * x);
 
   const total = p.reduce((s, v) => s + v, 0);
   const universal = idx.filter(d => idx.every(r => ok(d, r)));
@@ -67,10 +67,10 @@ export function scoreTypes(p, component = 'red', sameType = 0, emergency = 0) {
   const e = u > 0 ? emergency * u * M / (1 - emergency + emergency * u * M) : 0;
   const extra = u > 0 ? e / u : 0;
 
-  const value = matched.map((x, i) => (1 - e) * x + (universal.includes(i) ? extra : 0));
-  const rank = value.map(v => 1 + value.filter(w => w > v + 1e-9).length);
-  const order = [...idx].sort((a, b) => (value[b] - value[a]) || (a - b));
-  return { pool, pressure, shared, matched, universal, emergencyShare: e, emergencyLoad: extra, value, rank, order };
+  const score = matched.map((x, i) => (1 - e) * x + (universal.includes(i) ? extra : 0));
+  const rank = score.map(v => 1 + score.filter(w => w > v + 1e-9).length);
+  const order = [...idx].sort((a, b) => (score[b] - score[a]) || (a - b));
+  return { pool, pressure, shared, matched, universal, emergencyShare: e, emergencyLoad: extra, score, rank, order };
 }
 
 /** Parse data.csv: a header row, then `country,O-,O+,A-,A+,B-,B+,AB-,AB+` rows of percentages. */
@@ -108,9 +108,9 @@ const solve = (g, lo, hi) => {
   }
   return (a + b) / 2;
 };
-const universalScore = (p, component, sameType, emergency) => {
-  const r = scoreTypes(p, component, sameType, emergency);
-  return r.value[r.universal[0]];
+const universalScore = (p, component, ownType, emergency) => {
+  const r = scoreTypes(p, component, ownType, emergency);
+  return r.score[r.universal[0]];
 };
 
 /** θ that makes the universal donors' score equal `ratio`, given emergency share f. */
@@ -119,6 +119,6 @@ export function fitSameType(p, component, emergency, ratio) {
 }
 
 /** Emergency share f (up to `max`) that makes the universal donors' score equal `ratio`, given θ. */
-export function fitEmergency(p, component, sameType, ratio, max = 0.99) {
-  return solve(f => universalScore(p, component, sameType, f) - ratio, 0, max);
+export function fitEmergency(p, component, ownType, ratio, max = 0.99) {
+  return solve(f => universalScore(p, component, ownType, f) - ratio, 0, max);
 }

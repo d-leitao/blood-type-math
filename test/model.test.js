@@ -49,12 +49,12 @@ test('data.csv: 123 countries plus World, every row sums to 100', () => {
   for (const [name, row] of Object.entries(DATA)) close(row.reduce((a, b) => a + b, 0), 100, 0.1);
 });
 
-test('donor value averages exactly 1 across the population, for every country', () => {
+test('donor score averages exactly 1 across the population, for every country', () => {
   for (const [name, p] of Object.entries(DATA)) {
     const total = p.reduce((a, b) => a + b, 0);
     for (const component of ['red', 'plasma']) {
-      const { value } = scoreTypes(p, component);
-      const avg = value.reduce((s, v, i) => s + v * p[i], 0) / total;
+      const { score } = scoreTypes(p, component);
+      const avg = score.reduce((s, v, i) => s + v * p[i], 0) / total;
       close(avg, 1, 1e-9);
     }
   }
@@ -72,8 +72,8 @@ test('pressure is at most 1, and exactly 1 for O− red cells', () => {
 test('Portugal, red cells: O− first at 3.18×, B− fifth at 0.35×', () => {
   const r = scoreTypes(DATA.Portugal, 'red');
   assert.equal(TYPES[r.order[0]].l, 'O−');
-  close(r.value[idx['O−']], 3.18);
-  close(r.value[idx['B−']], 0.35);
+  close(r.score[idx['O−']], 3.18);
+  close(r.score[idx['B−']], 0.35);
   assert.equal(r.rank[idx['B−']], 5);
 });
 
@@ -81,42 +81,42 @@ test('Portugal, plasma: AB types tie for first at 3.05×', () => {
   const r = scoreTypes(DATA.Portugal, 'plasma');
   assert.equal(r.rank[idx['AB−']], 1);
   assert.equal(r.rank[idx['AB+']], 1);
-  close(r.value[idx['AB+']], 3.05);
-  close(r.value[idx['B−']], 1.12);
+  close(r.score[idx['AB+']], 3.05);
+  close(r.score[idx['B−']], 1.12);
 });
 
-test('same-type share: average stays exactly 1 for any θ', () => {
+test('own-type share: average stays exactly 1 for any θ', () => {
   for (const p of Object.values(DATA)) {
     const total = p.reduce((a, b) => a + b, 0);
     for (const theta of [0, 0.3, 0.7, 1]) {
       for (const component of ['red', 'plasma']) {
-        const { value } = scoreTypes(p, component, theta);
-        close(value.reduce((s, v, i) => s + v * p[i], 0) / total, 1, 1e-9);
+        const { score } = scoreTypes(p, component, theta);
+        close(score.reduce((s, v, i) => s + v * p[i], 0) / total, 1, 1e-9);
       }
     }
   }
 });
 
-test('same-type share: θ = 1 gives every type exactly 1', () => {
-  for (const v of scoreTypes(DATA.Portugal, 'red', 1).value) close(v, 1, 1e-12);
+test('own-type share: θ = 1 gives every type exactly 1', () => {
+  for (const v of scoreTypes(DATA.Portugal, 'red', 1).score) close(v, 1, 1e-12);
 });
 
-test('same-type share shrinks scores toward 1 without changing the order', () => {
+test('own-type share shrinks scores toward 1 without changing the order', () => {
   const base = scoreTypes(DATA.Portugal, 'red', 0);
   for (const theta of [0.2, 0.5, 0.7, 0.9]) {
     const r = scoreTypes(DATA.Portugal, 'red', theta);
     assert.deepEqual(r.order, base.order);
-    r.value.forEach((v, i) => close(v, theta + (1 - theta) * base.value[i], 1e-12));
+    r.score.forEach((v, i) => close(v, theta + (1 - theta) * base.score[i], 1e-12));
   }
 });
 
-test('Portugal, red cells at 70% same-type: O− about 1.65×', () => {
+test('Portugal, red cells at 70% own type: O− about 1.65×', () => {
   const r = scoreTypes(DATA.Portugal, 'red', 0.7);
-  close(r.value[idx['O−']], 1.65);
-  close(r.value[idx['B−']], 0.80);
+  close(r.score[idx['O−']], 1.65);
+  close(r.score[idx['B−']], 0.80);
 });
 
-test('same-type share outside 0..1 is rejected', () => {
+test('own-type share outside 0..1 is rejected', () => {
   assert.throws(() => scoreTypes(DATA.Portugal, 'red', 1.5), RangeError);
 });
 
@@ -130,8 +130,8 @@ test('emergency use: average stays exactly 1 for any θ and share, in every coun
     const total = p.reduce((a, b) => a + b, 0);
     for (const theta of [0, 0.8, 1]) for (const f of [0, 0.16, 0.7, 0.9]) {
       for (const component of ['red', 'plasma']) {
-        const { value } = scoreTypes(p, component, theta, f);
-        close(value.reduce((s, v, i) => s + v * p[i], 0) / total, 1, 1e-9);
+        const { score } = scoreTypes(p, component, theta, f);
+        close(score.reduce((s, v, i) => s + v * p[i], 0) / total, 1, 1e-9);
       }
     }
   }
@@ -140,31 +140,31 @@ test('emergency use: average stays exactly 1 for any θ and share, in every coun
 test('emergency use takes exactly the set share of universal donors\' load', () => {
   for (const f of [0.16, 0.7]) {
     const r = scoreTypes(DATA.Portugal, 'red', 0.8, f);
-    close(r.emergencyLoad / r.value[idx['O−']], f, 1e-12);
+    close(r.emergencyLoad / r.score[idx['O−']], f, 1e-12);
   }
 });
 
 test('emergency use: 0 changes nothing, more raises universal donors and lowers everyone else', () => {
   const base = scoreTypes(DATA.Portugal, 'plasma', 0.8);
-  assert.deepEqual(scoreTypes(DATA.Portugal, 'plasma', 0.8, 0).value, base.value);
+  assert.deepEqual(scoreTypes(DATA.Portugal, 'plasma', 0.8, 0).score, base.score);
   const r = scoreTypes(DATA.Portugal, 'plasma', 0.8, 0.7);
-  r.value.forEach((v, i) => (TYPES[i].abo === 'AB' ? assert.ok(v > base.value[i]) : assert.ok(v < base.value[i])));
+  r.score.forEach((v, i) => (TYPES[i].abo === 'AB' ? assert.ok(v > base.score[i]) : assert.ok(v < base.score[i])));
 });
 
 test('calibration: θ 84% and 16% emergency use reproduce England\'s O− (13% of stock, 8.33% of donors)', () => {
   const r = scoreTypes(DATA['United Kingdom'], 'red', 0.84, 0.16);
-  assert.ok(Math.abs(r.value[idx['O−']] - ENGLAND_ONEG) < 0.05);
+  assert.ok(Math.abs(r.score[idx['O−']] - ENGLAND_ONEG) < 0.05);
 });
 
 test('calibration: 65% emergency use comes close to Canada\'s AB plasma (14.1% of issues, about 4% of donors)', () => {
   const r = scoreTypes(DATA.Canada, 'plasma', 0.84, 0.65);
-  assert.ok(Math.abs(r.value[idx['AB+']] - CANADA_AB) < 0.1);
+  assert.ok(Math.abs(r.score[idx['AB+']] - CANADA_AB) < 0.1);
 });
 
 test('emergency use stays bounded where universal donors are rare', () => {
   for (const p of Object.values(DATA)) {
-    assert.ok(scoreTypes(p, 'red', 0.84, 0.16).value[idx['O−']] < 2.5);
-    assert.ok(scoreTypes(p, 'plasma', 0.84, 0.65).value[idx['AB+']] < 6);
+    assert.ok(scoreTypes(p, 'red', 0.84, 0.16).score[idx['O−']] < 2.5);
+    assert.ok(scoreTypes(p, 'plasma', 0.84, 0.65).score[idx['AB+']] < 6);
   }
 });
 
@@ -178,13 +178,13 @@ test("fitSameType: England's O− figures give about 74% with no emergencies and
   close(fitSameType(uk, 'red', 0, r), 0.737);
   close(fitSameType(uk, 'red', 0.16, r), 0.841);
   const th = fitSameType(uk, 'red', 0.16, r);
-  close(scoreTypes(uk, 'red', th, 0.16).value[idx['O−']], r, 1e-9);
+  close(scoreTypes(uk, 'red', th, 0.16).score[idx['O−']], r, 1e-9);
 });
 
 test("fitEmergency: Canada's AB plasma gives about 65% at θ 84%", () => {
   const f = fitEmergency(DATA.Canada, 'plasma', 0.84, CANADA_AB);
   close(f, 0.645);
-  close(scoreTypes(DATA.Canada, 'plasma', 0.84, f).value[idx['AB+']], CANADA_AB, 1e-9);
+  close(scoreTypes(DATA.Canada, 'plasma', 0.84, f).score[idx['AB+']], CANADA_AB, 1e-9);
 });
 
 test('fits return null when nothing in range matches', () => {

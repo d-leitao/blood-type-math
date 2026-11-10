@@ -580,11 +580,11 @@ P.addEventListener('click', e => {
   const b = e.target.closest('[data-pin]'); if (b) setPin({t: +b.dataset.pin});
 });
 
-/* value model (see model.js) */
+/* score model (see model.js) */
 function model(p, plasma){
   const em = emerg[plasma ? 'plasma' : 'red'];
   const r = scoreTypes(p, plasma ? 'plasma' : 'red', theta / 100, em / 100);
-  return {pool: r.pool, P: r.pressure, S: r.shared, V: r.value, rank: r.rank, order: r.order,
+  return {pool: r.pool, P: r.pressure, S: r.shared, V: r.score, rank: r.rank, order: r.order,
           U: r.universal, e: r.emergencyShare, eL: r.emergencyLoad, em};
 }
 const fmtV = v => v.toFixed(1);  // scores: only the universal donors' is matched to data, so one decimal
