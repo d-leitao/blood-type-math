@@ -1,8 +1,8 @@
-# Blood Type Math
-
-An interactive map of who can give blood to whom, with how common each type is in 123 countries and a simple model of which donor types matter most.
+<img width="1448" height="822" alt="image" src="https://github.com/user-attachments/assets/f45ff297-0564-4b0a-a87a-952bb5757955" />
 
 **Live page:** https://d-leitao.github.io/blood-type-math/
+
+An interactive map of who can give blood to whom, with how common each type is in 123 countries and a simple model of which donor types matter most.
 
 ## What it shows
 
