@@ -425,7 +425,7 @@ const CHECK = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.4 8.6l3 3
 const CROSS = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4.5 4.5l7 7M11.5 4.5l-7 7" fill="none" stroke-width="1.8" stroke-linecap="round"/></svg>';
 
 const where = r => r === 'World' ? 'worldwide' : 'in ' + (THE.has(r) ? 'the ' : '') + r;
-const fmt = v => v >= 99.95 ? '100' : v < 1 ? v.toFixed(2).replace(/0$/, '') : v.toFixed(1);
+const fmt = v => v >= 99.95 ? '100' : v < 0.005 ? '<0.01' : v < 1 ? v.toFixed(2).replace(/0$/, '') : v.toFixed(1);  // shares are given to two decimals, so 0 means rounded down
 const cap = s => s[0].toUpperCase() + s.slice(1);
 const joinAnd = a => a.length <= 1 ? a.join('') : a.slice(0, -1).join(', ') + ' and ' + a[a.length - 1];
 const antigens = t => ['A','B','D'].filter(x => t[x]);
