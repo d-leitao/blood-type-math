@@ -42,7 +42,7 @@ export function compatible(component, donor, recipient) {
  * is set so that emergencies take a share f of the universal donors' total load:
  * e = f·u·M / (1 − f + f·u·M), with M the universal donors' matched load. Defining it
  * relative to universal donors keeps it bounded where they are rare; a fixed share of all
- * blood would put about 35 times the average load on O− donors in Bhutan.
+ * blood would put about 15 times the average load on O− donors in Japan.
  *
  * The rest of each group's need (1 − θ) is drawn from everyone who can give to that group in
  * proportion to how many there are, own type included, so more than θ end up with their own type. score is how often a type's donors would need
