@@ -363,7 +363,7 @@ button.bar-row:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
       </div>
     </div>
 
-    <p class="assume" id="assume">The charts give the patient’s own type to <span class="stepper"><button type="button" class="step" data-for="theta" data-dir="-1" aria-label="Lower own-type share">−</button><span class="num-in"><input type="number" id="theta" min="0" max="99" step="1" inputmode="numeric" value="80" aria-label="Share of patients deliberately given their own type" aria-describedby="theta-help"><span aria-hidden="true">%</span></span><button type="button" class="step" data-for="theta" data-dir="1" aria-label="Raise own-type share">+</button></span> of patients and any compatible blood to the rest, and use <span class="stepper"><button type="button" class="step" data-for="emerg" data-dir="-1" aria-label="Lower emergency share">−</button><span class="num-in"><input type="number" id="emerg" min="0" max="90" step="1" inputmode="numeric" value="16" aria-label="Share of O− units used in emergencies" aria-describedby="emerg-help"><span aria-hidden="true">%</span></span><button type="button" class="step" data-for="emerg" data-dir="1" aria-label="Raise emergency share">+</button></span> of <span id="emerg-what">O− units</span> in emergencies. <span id="assume-note">These are the best available estimates.</span><button type="button" class="est" id="assume-reset" hidden>Back to the best available estimates</button></p>
+    <p class="assume" id="assume">The charts give the patient’s own type to <span class="stepper"><button type="button" class="step" data-for="theta" data-dir="-1" aria-label="Lower own-type share">−</button><span class="num-in"><input type="number" id="theta" min="0" max="99" step="1" inputmode="numeric" value="84" aria-label="Share of patients deliberately given their own type" aria-describedby="theta-help"><span aria-hidden="true">%</span></span><button type="button" class="step" data-for="theta" data-dir="1" aria-label="Raise own-type share">+</button></span> of patients and any compatible blood to the rest, and use <span class="stepper"><button type="button" class="step" data-for="emerg" data-dir="-1" aria-label="Lower emergency share">−</button><span class="num-in"><input type="number" id="emerg" min="0" max="90" step="1" inputmode="numeric" value="16" aria-label="Share of O− units used in emergencies" aria-describedby="emerg-help"><span aria-hidden="true">%</span></span><button type="button" class="step" data-for="emerg" data-dir="1" aria-label="Raise emergency share">+</button></span> of <span id="emerg-what">O− units</span> in emergencies. <span id="assume-note">These are the best available estimates.</span><button type="button" class="est" id="assume-reset" hidden>Back to the best available estimates</button></p>
   </section>
 
   <footer class="details" id="method">
@@ -373,17 +373,17 @@ button.bar-row:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
       <ol>
         <li><strong>Own type, on purpose.</strong> Hospitals pick the patient’s own type for most patients, so that need lands on donors of that type.</li>
         <li><strong>Emergencies.</strong> Some blood is given before the patient’s type is known. Only universal donors (O− red cells, AB plasma) are safe, so it all lands on them.</li>
-        <li><strong>Any compatible blood.</strong> The rest get whatever compatible blood there is, in proportion to how much each type donates. That’s often still their own type, so more patients end up with their own type than were matched on purpose: about 92% in Portugal. A group few people can give to weighs more on each of its donors: its size ÷ everyone who can give to it.</li>
+        <li><strong>Any compatible blood.</strong> The rest get whatever compatible blood there is, in proportion to how much each type donates. That’s often still their own type, so more patients end up with their own type than were matched on purpose: about 94% in Portugal. A group few people can give to weighs more on each of its donors: its size ÷ everyone who can give to it.</li>
       </ol>
-      <p>A type’s score is the need that lands on it ÷ what it supplies, which is how often its donors would need to give compared with the average donor. In Portugal at the best estimates, 10.3% of red cells would have to be O−, from 6.1% of people: 1.68×. Total need equals total donations, so the scores average exactly 1.0.</p>
+      <p>A type’s score is the need that lands on it ÷ what it supplies, which is how often its donors would need to give compared with the average donor. In Portugal at the best estimates, 9.6% of red cells would have to be O−, from 6.1% of people: 1.58×. Total need equals total donations, so the scores average exactly 1.0.</p>
     </section>
     <section aria-labelledby="d-theta">
       <h2 id="d-theta">The two assumptions</h2>
-      <p id="theta-help">Own type: the share of patients given their own type on purpose. The rest get any compatible blood, often their own type too, so about 92% of patients in Portugal end up with their own type at 80%. 0% is fully flexible. The 80% is an estimate, not a count of patients: it’s the share that makes O−’s score match England’s figures, where much of O−’s extra use is units given to other types before they expire.</p>
+      <p id="theta-help">Own type: the share of patients given their own type on purpose. The rest get any compatible blood, often their own type too, so about 94% of patients in Portugal end up with their own type at 84%. 0% is fully flexible. The 84% is an estimate, not a count of patients: it’s the share that makes O−’s score match England’s figures, where much of O−’s extra use is units given to other types before they expire.</p>
       <p id="emerg-help">Emergencies: the share of universal donors’ blood used before the patient’s type is known. It’s a share of their blood, not of all blood, so it stays realistic where they’re rare. A fixed share of all blood would put about 15 times the average load on O− donors in Japan.</p>
-      <p>Red cells: in England 16% of O− units went to emergencies, and O− is 7.8% of patients but 13% of red-cell stock (<a href="https://nhsbtdbe.blob.core.windows.net/umbraco-assets-corp/17159/o-neg-survey-2018-final2.pdf" target="_blank" rel="noopener">NHSBT 2018 audit</a>). That implies about 80% own type. With the same emergency share, Australia (9% of people, over 15% of demand; <a href="https://www.lifeblood.com.au/news-and-stories/trending-research/better-management-o-negative-blood-supply" target="_blank" rel="noopener">Lifeblood</a>) and the US (6.8% of donors, 12.1% of transfusions in 2023; <a href="https://www.aabb.org/docs/default-source/default-document-library/resources/association-bulletins/ab19-02.pdf" target="_blank" rel="noopener">AABB</a>) imply 76–81%, and a 2024 audit in Victoria, Australia about 50% (<a href="https://www.health.vic.gov.au/sites/default/files/2025-07/o-rhd-negative-rbc-audit-report-june-25.pdf" target="_blank" rel="noopener">Blood Matters</a>).</p>
-      <p>Plasma: no audit found. About 73% matches Canada, where AB is 14% of plasma issued but about 3% of people (<a href="https://www.blood.ca/sites/default/files/2018-AB%20Plasma-Overview.pdf" target="_blank" rel="noopener">Canadian Blood Services</a>). No published figures were found for Portugal.</p>
-      <p>The two estimates depend on each other: 80% own type assumes 16% emergencies. With no emergencies, England’s figures point to about 69%.</p>    </section>
+      <p>Red cells: in England 16% of O− units went to emergencies, and O− made up 13% of the median hospital’s red-cell stock but 8.3% of UK donors (<a href="https://nhsbtdbe.blob.core.windows.net/umbraco-assets-corp/17159/o-neg-survey-2018-final2.pdf" target="_blank" rel="noopener">NHSBT 2018 audit</a>). That implies about 84% own type. Stock isn’t the same as use, so this is a rough guide. With the same emergency share, Australia (9% of people, over 15% of demand; <a href="https://www.lifeblood.com.au/news-and-stories/trending-research/better-management-o-negative-blood-supply" target="_blank" rel="noopener">Lifeblood</a>) and the US (6.8% of donors, 12.1% of transfusions in 2023; <a href="https://www.aabb.org/docs/default-source/default-document-library/resources/association-bulletins/ab19-02.pdf" target="_blank" rel="noopener">AABB</a>) imply 76–81%, and a 2024 audit in Victoria, Australia about 50% (<a href="https://www.health.vic.gov.au/sites/default/files/2025-07/o-rhd-negative-rbc-audit-report-june-25.pdf" target="_blank" rel="noopener">Blood Matters</a>).</p>
+      <p>Plasma: no audit found. About 65% matches Canada, where AB is 14% of plasma issued but about 4% of donors (<a href="https://www.blood.ca/sites/default/files/2018-AB%20Plasma-Overview.pdf" target="_blank" rel="noopener">Canadian Blood Services</a>). No published figures were found for Portugal.</p>
+      <p>The two estimates depend on each other: 84% own type assumes 16% emergencies, and 65% plasma emergencies assumes 84% own type. With no emergencies, England’s figures point to about 74%.</p>    </section>
     <section aria-labelledby="d-assume">
       <h2 id="d-assume">Assumptions</h2>
       <ul>
@@ -438,7 +438,7 @@ let mode = load('btc-mode', 'red'); if (mode !== 'red' && mode !== 'plasma') mod
 let region = load('btc-region', 'World'); if (!D.r[region]) region = 'World';
 let saved = parseInt(load('btc-sel', load('btc-me', '0')), 10);  // first visit: O− is selected
 let pin = saved >= 0 && saved < 8 ? {t: saved} : null;  // the highlight: a type {t}, a pairing {d, r}, or nothing
-const EST = {theta: 80, red: 16, plasma: 73}, EMAX = 90;  // best estimates: own-type share, and emergency share of universal donors' blood
+const EST = {theta: 84, red: 16, plasma: 65}, EMAX = 90;  // best estimates: own-type share, and emergency share of universal donors' blood
 const TMAX = 99;  // two-digit fields
 let theta = parseInt(load('btc-theta', String(EST.theta)), 10); if (!(theta >= 0 && theta <= TMAX)) theta = EST.theta;
 const emerg = {};
@@ -587,7 +587,8 @@ function model(p, plasma){
   return {pool: r.pool, P: r.pressure, S: r.shared, V: r.value, rank: r.rank, order: r.order,
           U: r.universal, e: r.emergencyShare, eL: r.emergencyLoad, em, flat: theta === 100 && em === 0};
 }
-const fmtV = v => v >= 10 ? v.toFixed(1) : v.toFixed(2);
+const fmtV = v => v.toFixed(1);  // scores: only the universal donors' is matched to data, so one decimal
+const fmtB = v => v >= 10 ? v.toFixed(1) : v.toFixed(2);  // the breakdown, whose parts must add up to the score
 const apportion = vals => {
   const k = 100, fl = vals.map(v => Math.floor(v * k + 1e-9));
   let left = Math.round(vals.reduce((a, v) => a + v, 0) * k) - fl.reduce((a, v) => a + v, 0);
@@ -689,7 +690,7 @@ function renderModel(m, p, plasma, f, gt){
   });
 
   const d = T[b];
-  document.getElementById('press-h').textContent = `Where ${d.l}’s ${fmtV(m.V[b])} comes from`;
+  document.getElementById('press-h').textContent = `Where ${d.l}’s ${fmtB(m.V[b])} comes from`;
   document.getElementById('press-unit').textContent = `Donations needed per ${d.l} person`;
   document.getElementById('press-sub').textContent = `How many donations each ${d.l} person would need to give for each patient group, if the average person gives 1. A group needs more ${d.l} when it’s large, and when ${d.l} is a big share of the blood it can take. ${matchMedia('(hover: hover)').matches ? 'Hover' : 'Tap'} a row for its numbers.`;
   const th = theta / 100, keep = 1 - m.e, own = keep * th, rest = keep * (1 - th), em = m.U.includes(b) ? m.eL : 0;
@@ -708,7 +709,7 @@ function renderModel(m, p, plasma, f, gt){
   if (big(other)) parts.push(`${f2(other)} for other types`);
   if (big(emS)) parts.push(`${f2(emS)} for emergencies`);
   const list = parts.length > 1 ? `: ${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}` : parts.length ? `, all ${parts[0].replace(/^[\d.]+ /, '')}` : '';
-  document.getElementById('press-calc').innerHTML = `Each ${d.l} person would need to give <strong>${fmtV(m.V[b])}</strong> donations for every 1 the average person gives${list}.`;
+  document.getElementById('press-calc').innerHTML = `Each ${d.l} person would need to give <strong>${fmtB(m.V[b])}</strong> donations for every 1 the average person gives${list}.`;
   if (!pressCtx || pressCtx.b !== b || pressCtx.plasma !== plasma) prow = null;  // a new type: back to its own patients
   pressCtx = {d, b, p, m, rest, comp, plasma, rows, shown};
   const maxC = Math.max(em, ...rows.map(r => r.v)) || 1, w = v => (v / maxC * 100).toFixed(2) + '%';

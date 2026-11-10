@@ -6,6 +6,9 @@ import { TYPES, compatible, scoreTypes, parseCSV, fitSameType, fitEmergency } fr
 const idx = Object.fromEntries(TYPES.map((t, i) => [t.l, i]));
 const T = label => TYPES[idx[label]];
 const DATA = parseCSV(readFileSync(new URL('../data.csv', import.meta.url), 'utf8'));
+// Calibration targets: a type's share of the blood used ÷ its share of donors.
+const ENGLAND_ONEG = 13 / DATA['United Kingdom'][idx['O−']];  // NHSBT 2018: O− is 13% of red-cell stock
+const CANADA_AB = 14.1 / 4;  // Canadian Blood Services 2018: AB is 14.1% of plasma issued, about 4% of donors
 const close = (a, b, eps = 0.005) => assert.ok(Math.abs(a - b) < eps, `${a} is not within ${eps} of ${b}`);
 
 test('red cells: O− gives to everyone, AB+ receives from everyone', () => {
@@ -107,11 +110,10 @@ test('same-type share shrinks scores toward 1 without changing the order', () =>
   }
 });
 
-test('Portugal, red cells at 70% same-type: O− about 1.65×, near England\'s 13% ÷ 7.8%', () => {
+test('Portugal, red cells at 70% same-type: O− about 1.65×', () => {
   const r = scoreTypes(DATA.Portugal, 'red', 0.7);
   close(r.value[idx['O−']], 1.65);
   close(r.value[idx['B−']], 0.80);
-  assert.ok(Math.abs(r.value[idx['O−']] - 13 / 7.8) < 0.05);
 });
 
 test('same-type share outside 0..1 is rejected', () => {
@@ -149,20 +151,20 @@ test('emergency use: 0 changes nothing, more raises universal donors and lowers 
   r.value.forEach((v, i) => (TYPES[i].abo === 'AB' ? assert.ok(v > base.value[i]) : assert.ok(v < base.value[i])));
 });
 
-test('calibration: θ 80% and 16% emergency use reproduce England\'s O− (13% of stock, 7.8% of patients)', () => {
-  const r = scoreTypes(DATA['United Kingdom'], 'red', 0.8, 0.16);
-  assert.ok(Math.abs(r.value[idx['O−']] - 13 / 7.8) < 0.05);
+test('calibration: θ 84% and 16% emergency use reproduce England\'s O− (13% of stock, 8.33% of donors)', () => {
+  const r = scoreTypes(DATA['United Kingdom'], 'red', 0.84, 0.16);
+  assert.ok(Math.abs(r.value[idx['O−']] - ENGLAND_ONEG) < 0.05);
 });
 
-test('calibration: 73% emergency use comes close to Canada\'s AB plasma (14.1% of issues, about 3% of people)', () => {
-  const r = scoreTypes(DATA.Canada, 'plasma', 0.8, 0.73);
-  assert.ok(Math.abs(r.value[idx['AB+']] - 14.1 / 3) < 0.1);
+test('calibration: 65% emergency use comes close to Canada\'s AB plasma (14.1% of issues, about 4% of donors)', () => {
+  const r = scoreTypes(DATA.Canada, 'plasma', 0.84, 0.65);
+  assert.ok(Math.abs(r.value[idx['AB+']] - CANADA_AB) < 0.1);
 });
 
 test('emergency use stays bounded where universal donors are rare', () => {
   for (const p of Object.values(DATA)) {
-    assert.ok(scoreTypes(p, 'red', 0.8, 0.16).value[idx['O−']] < 2.5);
-    assert.ok(scoreTypes(p, 'plasma', 0.8, 0.7).value[idx['AB+']] < 6);
+    assert.ok(scoreTypes(p, 'red', 0.84, 0.16).value[idx['O−']] < 2.5);
+    assert.ok(scoreTypes(p, 'plasma', 0.84, 0.65).value[idx['AB+']] < 6);
   }
 });
 
@@ -171,21 +173,21 @@ test('emergency share of 1 or more is rejected', () => {
   assert.throws(() => scoreTypes(DATA.Portugal, 'red', 0.8, -0.1), RangeError);
 });
 
-test("fitSameType: England's O− figures give about 69% with no emergencies and 80% with 16%", () => {
-  const uk = DATA['United Kingdom'], r = 13 / 7.8;
-  close(fitSameType(uk, 'red', 0, r), 0.687);
-  close(fitSameType(uk, 'red', 0.16, r), 0.797);
+test("fitSameType: England's O− figures give about 74% with no emergencies and 84% with 16%", () => {
+  const uk = DATA['United Kingdom'], r = ENGLAND_ONEG;
+  close(fitSameType(uk, 'red', 0, r), 0.737);
+  close(fitSameType(uk, 'red', 0.16, r), 0.841);
   const th = fitSameType(uk, 'red', 0.16, r);
   close(scoreTypes(uk, 'red', th, 0.16).value[idx['O−']], r, 1e-9);
 });
 
-test("fitEmergency: Canada's AB plasma gives about 73% at θ 80%", () => {
-  const f = fitEmergency(DATA.Canada, 'plasma', 0.8, 14.1 / 3);
-  close(f, 0.727);
-  close(scoreTypes(DATA.Canada, 'plasma', 0.8, f).value[idx['AB+']], 14.1 / 3, 1e-9);
+test("fitEmergency: Canada's AB plasma gives about 65% at θ 84%", () => {
+  const f = fitEmergency(DATA.Canada, 'plasma', 0.84, CANADA_AB);
+  close(f, 0.645);
+  close(scoreTypes(DATA.Canada, 'plasma', 0.84, f).value[idx['AB+']], CANADA_AB, 1e-9);
 });
 
 test('fits return null when nothing in range matches', () => {
-  assert.equal(fitSameType(DATA['United Kingdom'], 'red', 0.5, 13 / 7.8), null);
+  assert.equal(fitSameType(DATA['United Kingdom'], 'red', 0.5, ENGLAND_ONEG), null);
   assert.equal(fitEmergency(DATA.Canada, 'plasma', 0.8, 50, 0.9), null);
 });
