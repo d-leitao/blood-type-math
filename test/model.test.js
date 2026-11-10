@@ -1,11 +1,11 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { TYPES, compatible, scoreTypes, breakdown, ownTypeShare, parseCSV, fitSameType, fitEmergency, TARGETS, ESTIMATES } from '../model.js';
+import { TYPES, compatible, scoreTypes, breakdown, ownTypeShare, parseCSV, fitSameType, fitEmergency, TARGETS, ESTIMATES } from '../src/model.js';
 
 const idx = Object.fromEntries(TYPES.map((t, i) => [t.l, i]));
 const T = label => TYPES[idx[label]];
-const DATA = parseCSV(readFileSync(new URL('../data.csv', import.meta.url), 'utf8'));
+const DATA = parseCSV(readFileSync(new URL('../data/prevalence.csv', import.meta.url), 'utf8'));
 const ENGLAND_ONEG = TARGETS.englandOnegStock / DATA['United Kingdom'][idx['O−']];
 const CANADA_AB = TARGETS.canadaAbPlasma / TARGETS.canadaAbDonors;
 const close = (a, b, eps = 0.005) => assert.ok(Math.abs(a - b) < eps, `${a} is not within ${eps} of ${b}`);
@@ -42,7 +42,7 @@ test('plasma ignores RhD', () => {
   }
 });
 
-test('data.csv: 123 countries plus World, every row sums to 100', () => {
+test('data/prevalence.csv: 123 countries plus World, every row sums to 100', () => {
   assert.equal(Object.keys(DATA).length, 124);
   assert.ok(DATA.World && DATA.Portugal);
   for (const [name, row] of Object.entries(DATA)) close(row.reduce((a, b) => a + b, 0), 100, 0.1);

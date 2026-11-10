@@ -407,19 +407,19 @@ button.bar-row:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
 </div>
 
 <script type="module">
-import { TYPES as T, compatible, scoreTypes, breakdown, ownTypeShare, fitSameType, parseCSV, TARGETS, ESTIMATES } from './model.js';
+import { TYPES as T, compatible, scoreTypes, breakdown, ownTypeShare, fitSameType, parseCSV, TARGETS, ESTIMATES } from './src/model.js';
 
 (async function(){
 let D;
 try {
-  const res = await fetch('data.csv');
+  const res = await fetch('data/prevalence.csv');
   if (!res.ok) throw new Error(res.status + ' ' + res.statusText);
   const r = parseCSV(await res.text());
   D = { r, meta: { n: Object.keys(r).length - 1, popbn: 7.4 } };
 } catch (err) {
   const msg = document.createElement('p');
   msg.className = 'load-error';
-  msg.textContent = 'The prevalence data (data.csv) could not be loaded: ' + err.message + '. If you opened this file directly from disk, serve the folder instead, for example with "python3 -m http.server".';
+  msg.textContent = 'The prevalence data (data/prevalence.csv) could not be loaded: ' + err.message + '. If you opened this file directly from disk, serve the folder instead, for example with "python3 -m http.server".';
   document.querySelector('.workspace').replaceWith(msg);
   return;
 }
@@ -599,7 +599,7 @@ P.addEventListener('click', e => {
   const b = e.target.closest('[data-pin]'); if (b) setPin({t: +b.dataset.pin});
 });
 
-/* score model (see model.js) */
+/* score model (see src/model.js) */
 function model(p, plasma){
   const em = emerg[plasma ? 'plasma' : 'red'];
   const r = scoreTypes(p, plasma ? 'plasma' : 'red', theta / 100, em / 100);

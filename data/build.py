@@ -1,4 +1,4 @@
-"""Build data.csv (what the page loads) from data/source.csv.
+"""Build data/prevalence.csv (what the page loads) from data/source.csv.
 
 data/source.csv holds blood type shares by country as compiled on Wikipedia's
 "Blood type distribution by country", plus each country's population.
@@ -7,16 +7,16 @@ Steps:
   1. Drop countries missing any of the eight ABO/RhD types.
   2. Rescale each country's row so it sums to exactly 100.
   3. Add a "World" row: the population-weighted average of those countries.
-  4. Round to 2 decimals and write data.csv, World first, then countries A-Z.
+  4. Round to 2 decimals and write data/prevalence.csv, World first, then countries A-Z.
 
-Standard library only. Run from the repo root:  python3 scripts/build_data.py
+Standard library only. Run from the repo root:  python3 data/build.py
 """
 import csv
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 SRC = ROOT / "data" / "source.csv"
-OUT = ROOT / "data.csv"
+OUT = ROOT / "data" / "prevalence.csv"
 
 # Column order used by the page: O-, O+, A-, A+, B-, B+, AB-, AB+
 COLS = ["Oneg", "Opos", "Aneg", "Apos", "Bneg", "Bpos", "ABneg", "ABpos"]

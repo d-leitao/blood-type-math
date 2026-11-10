@@ -30,7 +30,7 @@ The rest of each group's need, `1 − θ`, is drawn from everyone who can donate
 
 Emergency use is set as a share of the universal donors' blood rather than of all blood. A fixed share of all blood would explode where they're rare: 2% of all red cells going to O− in Japan, where O− is 0.15% of people, would score O− donors at about 15×.
 
-Both are numbers you can change on the page, under the score breakdown. Each estimate matches a type's share of the blood used ÷ its share of donors. The two depend on each other: 84% own type assumes 16% emergencies (with none, England's figures point to about 74%), and 65% plasma emergencies assumes 84% own type. `fitSameType` and `fitEmergency` in `model.js` compute them.
+Both are numbers you can change on the page, under the score breakdown. Each estimate matches a type's share of the blood used ÷ its share of donors. The two depend on each other: 84% own type assumes 16% emergencies (with none, England's figures point to about 74%), and 65% plasma emergencies assumes 84% own type. `fitSameType` and `fitEmergency` in `src/model.js` compute them.
 
 | Setting | Estimate | Source |
 |---|---|---|
@@ -62,22 +62,22 @@ The universal donors come first in every country, because they reach every patie
 
 `data/source.csv` holds blood type shares by country as compiled in Wikipedia's [Blood type distribution by country](https://en.wikipedia.org/wiki/Blood_type_distribution_by_country), mostly from national blood services, plus each country's population. Many figures come from donor populations rather than whole countries.
 
-`scripts/build_data.py` turns it into `data.csv`, which the page loads:
+`data/build.py` turns it into `data/prevalence.csv`, which the page loads:
 
 1. Drops countries missing any of the eight types (Egypt, New Zealand and Oman), leaving 123.
 2. Rescales each row to sum to 100. The UK's source row sums to 96, for example.
 3. Adds a population-weighted **World** row covering about 7.4 billion people. Wikipedia's own world row is flagged as unreliable, and the often-quoted global split (O+ 42%, B+ 15%) under-weights South and East Asia, where B is far more common.
 
-CI rebuilds `data.csv` on every push and fails if it doesn't match the committed file.
+CI rebuilds `data/prevalence.csv` on every push and fails if it doesn't match the committed file.
 
 ## Run it locally
 
-The page loads `data.csv` and `model.js`, so it needs a local web server rather than opening the file from disk:
+The page loads `data/prevalence.csv` and `src/model.js`, so it needs a local web server rather than opening the file from disk:
 
 ```sh
 python3 -m http.server 8000   # then open http://localhost:8000
 npm test                      # model and data tests (Node 18+)
-python3 scripts/build_data.py # rebuild data.csv from data/source.csv
+python3 data/build.py         # rebuild data/prevalence.csv from data/source.csv
 ```
 
 ## Files
@@ -85,10 +85,10 @@ python3 scripts/build_data.py # rebuild data.csv from data/source.csv
 | File | What it is |
 |---|---|
 | `index.html` | The page: layout, styles and interface code |
-| `model.js` | Compatibility rules and the donor score model, with no page code, so the tests can import it |
-| `data.csv` | Prevalence by country, generated |
+| `src/model.js` | Compatibility rules and the donor score model, with no page code, so the tests can import it |
+| `data/prevalence.csv` | Prevalence by country, generated |
 | `data/source.csv` | Raw figures and populations |
-| `scripts/build_data.py` | Builds `data.csv` from the source |
+| `data/build.py` | Builds `data/prevalence.csv` from the source |
 | `test/model.test.js` | Tests for the rules, the data and the model |
 
 ## Not medical advice
@@ -97,6 +97,6 @@ This page covers ABO and RhD only. Hospitals type and crossmatch every unit befo
 
 ## Licence
 
-Code: MIT, see [LICENSE](LICENSE). Data: the figures in `data/` and `data.csv` come from Wikipedia and are available under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/), so reuse needs attribution to Wikipedia and the same licence.
+Code: MIT, see [LICENSE](LICENSE). Data: the figures in `data/` come from Wikipedia and are available under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/), so reuse needs attribution to Wikipedia and the same licence.
 
 Built with [Claude](https://claude.ai).

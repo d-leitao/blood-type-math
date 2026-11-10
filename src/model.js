@@ -101,7 +101,7 @@ export function ownTypeShare(p, component, ownType) {
 
 /**
  * Published figures the estimates are set to match: a type's share of the blood used ÷ its share of donors.
- * England: O− is 13% of the median hospital's red-cell stock (NHSBT 2018); its donor share is data.csv's UK row.
+ * England: O− is 13% of the median hospital's red-cell stock (NHSBT 2018); its donor share is data/prevalence.csv's UK row.
  * Canada: AB is 14.1% of plasma issued and about 4% of donors (Canadian Blood Services 2018).
  */
 export const TARGETS = { englandOnegStock: 13, canadaAbPlasma: 14.1, canadaAbDonors: 4 };
@@ -109,7 +109,7 @@ export const TARGETS = { englandOnegStock: 13, canadaAbPlasma: 14.1, canadaAbDon
 /** The best estimates the page starts from: own-type share, and emergency share of universal donors' blood. */
 export const ESTIMATES = { ownType: 0.84, emergency: { red: 0.16, plasma: 0.65 } };
 
-/** Parse data.csv: a header row, then `country,O-,O+,A-,A+,B-,B+,AB-,AB+` rows of percentages. */
+/** Parse data/prevalence.csv: a header row, then `country,O-,O+,A-,A+,B-,B+,AB-,AB+` rows of percentages. */
 export function parseCSV(text) {
   const lines = text.trim().split(/\r?\n/);
   const header = lines.shift().split(',').map(s => s.trim());
