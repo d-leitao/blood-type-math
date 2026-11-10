@@ -38,7 +38,7 @@ Both are numbers you can change on the page, under the score breakdown. Each est
 | Emergencies, red cells | 16% | The NHSBT audit above. |
 | Emergencies, plasma | 65% | No audit found. 65% reproduces Canada, where AB is 14% of plasma issued but about 4% of donors ([Canadian Blood Services](https://www.blood.ca/sites/default/files/2018-AB%20Plasma-Overview.pdf)). |
 
-None of these are measured for Portugal. At `θ` = 0% and no emergencies, any compatible unit can go to any patient: the most flexible case. At 100% and no emergencies, every score is exactly 1.
+None of these are measured for Portugal. At `θ` = 0% and no emergencies, any compatible unit can go to any patient: the most flexible case. At 100% and no emergencies every score would be exactly 1; the page's own-type field stops at 99%.
 
 Scores for Portugal:
 

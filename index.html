@@ -585,7 +585,7 @@ function model(p, plasma){
   const em = emerg[plasma ? 'plasma' : 'red'];
   const r = scoreTypes(p, plasma ? 'plasma' : 'red', theta / 100, em / 100);
   return {pool: r.pool, P: r.pressure, S: r.shared, V: r.value, rank: r.rank, order: r.order,
-          U: r.universal, e: r.emergencyShare, eL: r.emergencyLoad, em, flat: theta === 100 && em === 0};
+          U: r.universal, e: r.emergencyShare, eL: r.emergencyLoad, em};
 }
 const fmtV = v => v.toFixed(1);  // scores: only the universal donors' is matched to data, so one decimal
 const fmtB = v => v >= 10 ? v.toFixed(1) : v.toFixed(2);  // the breakdown, whose parts must add up to the score
@@ -595,7 +595,6 @@ const apportion = vals => {
   vals.map((v, i) => [v * k - fl[i], i]).sort((a, b) => b[0] - a[0]).forEach(([, i]) => { if (left > 0) { fl[i]++; left--; } });
   return fl.map(v => v / k);
 };
-const fmt3 = v => v.toFixed(3);
 const ord = n => n + (n === 1 ? 'st' : n === 2 ? 'nd' : n === 3 ? 'rd' : 'th');
 
 const MR = document.getElementById('m-rank'), MP = document.getElementById('m-press');
@@ -621,7 +620,7 @@ MP.addEventListener('focusout', e => { if (!MP.contains(e.relatedTarget)) explai
 function explain(k){
   const c = pressCtx; if (!c) return;
   const {d, b, p, m, rest, comp, plasma} = c;
-  const pc = v => (v * 100).toFixed(1).replace(/\.0$/, '') + '%', n = v => Math.round(v * 100);
+  const pc = v => (v * 100).toFixed(1).replace(/\.0$/, '') + '%';
   const uName = plasma ? 'AB' : 'O−', uP = m.U.reduce((a, i) => a + p[i], 0);
   if (k == null) k = b;
   let t;
@@ -631,14 +630,14 @@ function explain(k){
     t = `${T[k].l} patients can’t receive ${d.l} ${comp}.`;
   } else if (k === b) {
     // the model counts blood, not people: B− patients need as much as B− people give at the average rate
-    const P = m.P[b], uni = m.U.includes(b), mid = theta >= 100 ? `all of it gets ${d.l}` : theta > 0
+    const P = m.P[b], uni = m.U.includes(b), mid = theta > 0
       ? `${theta}% gets ${d.l} on purpose and ${100 - theta}% gets any compatible blood, ${pc(P)} of which is ${d.l}`
       : `all of it gets any compatible blood, ${pc(P)} of which is ${d.l}`;
     const emTxt = m.e > 0 ? ` ${pc(m.e)} of it is for emergencies${uni ? ' (its own row)' : ` and comes from ${uName}`}. Of the rest,` : '';
     t = `${d.l} patients need as much blood as ${d.l} people would give at the average rate, since ${d.l} is ${fmt(p[b])}% of people and of the blood patients need.${emTxt}${emTxt ? ' ' + mid : ' ' + mid[0].toUpperCase() + mid.slice(1)}. That’s ${c.shown[b].toFixed(2)} donations per ${d.l} person.`;
   } else {
     const ratio = p[k] / p[b], slice = p[b] / m.pool[k];
-    t = `${T[k].l} patients need ${ratio.toFixed(1)}× as much blood as ${d.l} people would give (${fmt(p[k])}% vs ${fmt(p[b])}% of people). ${pc(rest)} of that need gets any compatible blood${m.e > 0 && theta < 100 ? ` (${100 - theta}% of what isn’t for emergencies)` : ''}, and ${d.l} is ${pc(slice)} of what they can take. ${ratio.toFixed(1)} × ${pc(rest)} × ${pc(slice)} ≈ ${String(+c.rows[k].v.toPrecision(2))} donations per ${d.l} person.`;
+    t = `${T[k].l} patients need ${ratio.toFixed(1)}× as much blood as ${d.l} people would give (${fmt(p[k])}% vs ${fmt(p[b])}% of people). ${pc(rest)} of that need gets any compatible blood${m.e > 0 ? ` (${100 - theta}% of what isn’t for emergencies)` : ''}, and ${d.l} is ${pc(slice)} of what they can take. ${ratio.toFixed(1)} × ${pc(rest)} × ${pc(slice)} ≈ ${String(+c.rows[k].v.toPrecision(2))} donations per ${d.l} person.`;
   }
   document.getElementById('press-note').textContent = t;
   [...pressRows, emRow].forEach((r, i) => r.classList.toggle('explained', i === k));
@@ -669,11 +668,9 @@ function renderModel(m, p, plasma, f, gt){
   // O− red cells and AB plasma reach every patient, so they top every population; ties share an ABO group (AB− and AB+ plasma)
   const topName = tops.length > 1 && tops.every(i => T[i].abo === T[tops[0]].abo) ? T[tops[0]].abo : joinAnd(tops.map(i => T[i].l));
   const topP = tops.reduce((a, i) => a + p[i], 0);
-  const lead = m.flat
-    ? 'When every patient gets their own type and there are no emergencies, every type’s donors give at the average rate.'
-    : `<strong>${topName}</strong> ${plasma ? 'plasma is' : 'red cells are'} always the most needed, since anyone can receive ${plasma ? 'it' : 'them'}. ${cap(where(region))}, ${fmt(topP)}% of people are ${topName}, but ${fmt(topP * topV)}% of the ${plasma ? 'plasma' : 'red cells'} patients receive would have to be ${topName}. So ${topName} donors would need to give ${fmtV(topV)}× as often as the average donor.`;
+  const lead = `<strong>${topName}</strong> ${plasma ? 'plasma is' : 'red cells are'} always the most needed, since anyone can receive ${plasma ? 'it' : 'them'}. ${cap(where(region))}, ${fmt(topP)}% of people are ${topName}, but ${fmt(topP * topV)}% of the ${plasma ? 'plasma' : 'red cells'} patients receive would have to be ${topName}. So ${topName} donors would need to give ${fmtV(topV)}× as often as the average donor.`;
   const sel = f;  // the highlighted type, hovered or selected
-  const extra = m.flat || sel == null || tops.includes(sel) ? '' : ` ${T[sel].l}: ${fmtV(m.V[sel])}×, ${ord(m.rank[sel])} of 8.`;
+  const extra = sel == null || tops.includes(sel) ? '' : ` ${T[sel].l}: ${fmtV(m.V[sel])}×, ${ord(m.rank[sel])} of 8.`;
   document.getElementById('model-result').innerHTML = lead + extra;
 
   const maxV = Math.max(...m.V) * 1.06 || 1, avg = 100 / maxV;
@@ -793,7 +790,7 @@ function renderPanel(a, p, plasma, m){
     if (s.g.length === 8) tags.push('Universal donor');
     if (s.r.length === 8) tags.push('Universal recipient');
     // the bottom two red-cell types: point to plasma when it ranks higher there
-    const alt = !plasma && !m.flat && m.rank[i] >= 7 ? model(p, true) : null;
+    const alt = !plasma && m.rank[i] >= 7 ? model(p, true) : null;
     const altLine = alt && alt.rank[i] < m.rank[i]
       ? `<p class="p-alt">${alt.rank[i] === 1 ? `${t.l} plasma is the most needed of any type` : `${t.l} plasma ranks ${ord(alt.rank[i])} of 8`}, at <strong>${fmtV(alt.V[i])}×</strong> the average donor. <button type="button" class="linkbtn" data-mode-to="plasma">Show plasma</button></p>`
       : '';
@@ -803,7 +800,7 @@ function renderPanel(a, p, plasma, m){
       <p class="p-bio">${bio(t, plasma)}</p>
       <table class="p-table"><thead><tr><th scope="col">Gives ${plasma ? 'plasma' : 'red cells'} to</th><th scope="col">Gets them from</th></tr></thead>
       <tbody><tr><td><span class="v">${fmt(s.gp)}%</span><span class="ts">${listTxt(s.g)}</span></td><td><span class="v">${fmt(s.rp)}%</span><span class="ts">${listTxt(s.r)}</span></td></tr></tbody></table>
-      <p class="p-value">Donation rate needed: <strong>${fmtV(m.V[i])}×</strong> the average donor${m.flat ? '' : ', ' + ord(m.rank[i]) + ' of 8'}. <button type="button" class="linkbtn" data-jump>See model</button></p>
+      <p class="p-value">Donation rate needed: <strong>${fmtV(m.V[i])}×</strong> the average donor, ${ord(m.rank[i])} of 8. <button type="button" class="linkbtn" data-jump>See model</button></p>
       ${altLine}
       <p class="hint">% = share of people on the other side. Tap a square for one pairing.</p>`;
   } else {
