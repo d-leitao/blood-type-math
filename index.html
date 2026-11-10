@@ -403,7 +403,7 @@ button.bar-row:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
 </div>
 
 <script type="module">
-import { TYPES as T, compatible, scoreTypes, parseCSV } from './model.js';
+import { TYPES as T, compatible, scoreTypes, breakdown, parseCSV } from './model.js';
 
 (async function(){
 let D;
@@ -690,14 +690,8 @@ function renderModel(m, p, plasma, f, gt){
   document.getElementById('press-h').textContent = `Where ${d.l}’s ${fmtB(m.V[b])} comes from`;
   document.getElementById('press-unit').textContent = `Donations needed per ${d.l} person`;
   document.getElementById('press-sub').textContent = `How many donations each ${d.l} person would need to give for each patient group, if the average person gives 1. A group needs more ${d.l} when it’s large, and when ${d.l} is a big share of the blood it can take. ${matchMedia('(hover: hover)').matches ? 'Hover' : 'Tap'} a row for its numbers.`;
-  const th = theta / 100, keep = 1 - m.e, own = keep * th, rest = keep * (1 - th), em = m.U.includes(b) ? m.eL : 0;
+  const {groups: rows, emergency: em, rest} = breakdown(p, key, theta / 100, m.em / 100, b);
   const big = v => v >= 0.005, pc = v => (v * 100).toFixed(1).replace(/\.0$/, '') + '%';
-  // what each patient group takes from this donor type, split by who receives it (not by how they were matched):
-  // patients given their own type, plus that group's share of everyone given any compatible type
-  const rows = T.map((u, j) => {
-    const can = ok(plasma, d, u);
-    return {can, v: (j === b ? own : 0) + (can ? rest * m.P[j] : 0)};
-  });
   const shown = apportion([...rows.map(r => r.v), em]);  // so the column adds up to the score
   const same = shown[b], other = shown.slice(0, 8).reduce((a, v, j) => a + (j === b ? 0 : v), 0), emS = shown[8];
   // per 100 units this type gives (apportioned, so the parts add up to the total)

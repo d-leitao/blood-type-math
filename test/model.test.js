@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { TYPES, compatible, scoreTypes, parseCSV, fitSameType, fitEmergency } from '../model.js';
+import { TYPES, compatible, scoreTypes, breakdown, parseCSV, fitSameType, fitEmergency } from '../model.js';
 
 const idx = Object.fromEntries(TYPES.map((t, i) => [t.l, i]));
 const T = label => TYPES[idx[label]];
@@ -190,4 +190,17 @@ test("fitEmergency: Canada's AB plasma gives about 65% at θ 84%", () => {
 test('fits return null when nothing in range matches', () => {
   assert.equal(fitSameType(DATA['United Kingdom'], 'red', 0.5, ENGLAND_ONEG), null);
   assert.equal(fitEmergency(DATA.Canada, 'plasma', 0.8, 50, 0.9), null);
+});
+
+test('breakdown: the parts add up to the score, for every type, country and setting', () => {
+  for (const p of Object.values(DATA)) for (const component of ['red', 'plasma']) {
+    for (const [th, f] of [[0, 0], [0.84, 0.16], [0.5, 0.65]]) {
+      const { score } = scoreTypes(p, component, th, f);
+      TYPES.forEach((_, b) => {
+        const { groups, emergency } = breakdown(p, component, th, f, b);
+        close(groups.reduce((s, g) => s + g.v, 0) + emergency, score[b], 1e-9);
+        groups.forEach(g => { if (!g.can) assert.equal(g.v, 0); });
+      });
+    }
+  }
 });

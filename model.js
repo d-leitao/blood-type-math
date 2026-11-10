@@ -73,6 +73,22 @@ export function scoreTypes(p, component = 'red', ownType = 0, emergency = 0) {
   return { pool, pressure, shared, matched, universal, emergencyShare: e, emergencyLoad: extra, score, rank, order };
 }
 
+/**
+ * Where donor type b's score comes from, split by who receives the blood: each patient group's take
+ * (its own-type share if it is b, plus its share of the blood given as any compatible type), and b's
+ * emergency load. The groups and the emergency load add up to score[b]. rest is the share of each
+ * group's need given as any compatible type.
+ */
+export function breakdown(p, component, ownType, emergency, b) {
+  const r = scoreTypes(p, component, ownType, emergency);
+  const keep = 1 - r.emergencyShare, own = keep * ownType, rest = keep * (1 - ownType);
+  const groups = TYPES.map((u, j) => {
+    const can = compatible(component, TYPES[b], u);
+    return { can, v: (j === b ? own : 0) + (can ? rest * r.pressure[j] : 0) };
+  });
+  return { groups, emergency: r.universal.includes(b) ? r.emergencyLoad : 0, rest };
+}
+
 /** Parse data.csv: a header row, then `country,O-,O+,A-,A+,B-,B+,AB-,AB+` rows of percentages. */
 export function parseCSV(text) {
   const lines = text.trim().split(/\r?\n/);
